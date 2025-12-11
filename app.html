@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Liftory - Dashboard</title>
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="stylesheet" href="/css/loader.css">
+    <link rel="stylesheet" href="/css/dashboard.css">
+    <link rel="stylesheet" href="/css/products.css">
+    <link rel="stylesheet" href="/css/movements.css">
+    <link rel="stylesheet" href="/css/finance.css">
+    <link rel="stylesheet" href="/css/reports.css">
+    <link rel="shortcut icon" href="/assets/icons/logo-test.ico" type="image/x-icon">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css" />
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+</head>
+
+<body>
+    <!--<div class="background">
+        <div class="radial-glow"></div>
+    </div>-->
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="brand-logo">
+                <img src="/assets/icons/leftory-logo.svg" alt="Liftory" class="logo-icon">
+            </div>
+            <span class="brand-name">Liftory</span>
+        </div>
+
+        <nav class="sidebar-nav">
+            <a href="/dashboard" class="nav-item active" data-view="dashboard" data-link>
+                <div class="nav-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                        class="icon icon-tabler icons-tabler-outline icon-tabler-layout">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                        <path d="M4 4m0 2a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v1a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2z" />
+                        <path d="M4 13m0 2a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v3a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2z" />
+                        <path d="M14 4m0 2a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2z" />
+                    </svg>
+                </div>
+                <span class="nav-text">Dashboard</span>
+            </a>
+
+            <a href="/products" class="nav-item" data-view="products" data-link>
+                <div class="nav-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                        class="icon icon-tabler icons-tabler-outline icon-tabler-package">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                        <path d="M12 3l8 4.5l0 9l-8 4.5l-8 -4.5l0 -9l8 -4.5" />
+                        <path d="M12 12l8 -4.5" />
+                        <path d="M12 12l0 9" />
+                        <path d="M12 12l-8 -4.5" />
+                        <path d="M16 5.25l-8 4.5" />
+                    </svg>
+                </div>
+                <span class="nav-text">Productos</span>
+            </a>
+
+            <a href="/movements" class="nav-item" data-view="sales" data-link>
+                <div class="nav-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                        class="icon icon-tabler icons-tabler-outline icon-tabler-switch-vertical">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                        <path d="M3 8l4 -4l4 4" />
+                        <path d="M7 4l0 9" />
+                        <path d="M13 16l4 4l4 -4" />
+                        <path d="M17 10l0 10" />
+                    </svg>
+                </div>
+                <span class="nav-text">Movimientos</span>
+            </a>
+
+            <a href="/reports" class="nav-item" data-view="reports" data-link>
+                <div class="nav-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                        class="icon icon-tabler icons-tabler-outline icon-tabler-report">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                        <path d="M8 5h-2a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h5.697" />
+                        <path d="M18 14v4h4" />
+                        <path d="M18 11v-4a2 2 0 0 0 -2 -2h-2" />
+                        <path d="M8 3m0 2a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v0a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2z" />
+                        <path d="M18 18m-4 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0" />
+                        <path d="M8 11h4" />
+                        <path d="M8 15h3" />
+                    </svg>
+                </div>
+                <span class="nav-text">Reportes</span>
+            </a>
+
+            <a href="/finance" class="nav-item" data-view="finance" data-link>
+                <div class="nav-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                        class="icon icon-tabler icons-tabler-outline icon-tabler-pig-money">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                        <path d="M15 11v.01" />
+                        <path d="M5.173 8.378a3 3 0 1 1 4.656 -1.377" />
+                        <path
+                            d="M16 4v3.803a6.019 6.019 0 0 1 2.658 3.197h1.341a1 1 0 0 1 1 1v2a1 1 0 0 1 -1 1h-1.342c-.336 .95 -.907 1.8 -1.658 2.473v2.027a1.5 1.5 0 0 1 -3 0v-.583a6.04 6.04 0 0 1 -1 .083h-4a6.04 6.04 0 0 1 -1 -.083v.583a1.5 1.5 0 0 1 -3 0v-2l0 -.027a6 6 0 0 1 4 -10.473h2.5l4.5 -3h0z" />
+                    </svg>
+                </div>
+                <span class="nav-text">Finanzas</span>
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <a href="/upgrade" class="nav-item" data-view="settings" data-link>
+                <div class="nav-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                        class="icon icon-tabler icons-tabler-outline icon-tabler-rocket">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                        <path
+                            d="M4 13a8 8 0 0 1 7 7a6 6 0 0 0 3 -5a9 9 0 0 0 6 -8a3 3 0 0 0 -3 -3a9 9 0 0 0 -8 6a6 6 0 0 0 -5 3" />
+                        <path d="M7 14a6 6 0 0 0 -3 6a6 6 0 0 0 6 -3" />
+                        <path d="M15 9m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" />
+                    </svg>
+                </div>
+                <span class="nav-text">Upgrade Plan</span>
+            </a>
+            <a href="/feedback" class="nav-item" data-view="settings" data-link>
+                <div class="nav-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                        class="icon icon-tabler icons-tabler-outline icon-tabler-message-report">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                        <path
+                            d="M18 4a3 3 0 0 1 3 3v8a3 3 0 0 1 -3 3h-5l-5 3v-3h-2a3 3 0 0 1 -3 -3v-8a3 3 0 0 1 3 -3h12z" />
+                        <path d="M12 8v3" />
+                        <path d="M12 14v.01" />
+                    </svg>
+                </div>
+                <span class="nav-text">Dar feedback</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Top Bar -->
+    <header class="top-bar" id="top-bar">
+        <div class="top-bar-content">
+            <!-- Left side - empty for now -->
+            <div class="top-bar-left"></div>
+
+            <!-- Center - Search Bar -->
+            <div class="search-container">
+                <div class="search-input-wrapper">
+                    <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <path d="m21 21-4.35-4.35"></path>
+                    </svg>
+                    <input type="text" class="search-input" id="products-search" placeholder="Buscar">
+                    <svg id="scan-search" class="scan-icon" xmlns="http://www.w3.org/2000/svg" width="22" height="22"
+                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-scan">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                        <path d="M4 7v-1a2 2 0 0 1 2 -2h2" />
+                        <path d="M4 17v1a2 2 0 0 0 2 2h2" />
+                        <path d="M16 4h2a2 2 0 0 1 2 2v1" />
+                        <path d="M16 20h2a2 2 0 0 0 2 -2v-1" />
+                        <path d="M5 12l14 0" />
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Right side - Actions -->
+            <div class="top-bar-right">
+                <button class="action-btn notification-btn" id="notification-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                        class="icon icon-tabler icons-tabler-outline icon-tabler-bell">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                        <path
+                            d="M10 5a2 2 0 1 1 4 0a7 7 0 0 1 4 6v3a4 4 0 0 0 2 3h-16a4 4 0 0 0 2 -3v-3a7 7 0 0 1 4 -6" />
+                        <path d="M9 17v1a3 3 0 0 0 6 0v-1" />
+                    </svg>
+                    <span class="notification-badge">3</span>
+                </button>
+
+                <div class="user-avatar-container" id="user-avatar-btn" style="cursor: pointer;">
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRi_Gmlxn_WyoSjYy-Za1adFUdYloIJpVbzBVQQG1Z6zhYyjmt_ND8LMURMPBg8srlu2KQ&usqp=CAU"
+                        alt="User Avatar" class="user-avatar-img">
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content (router target) -->
+    <main class="main-content" id="app-content"></main>
+
+    <!-- Mobile Bottom Navigation -->
+    <nav class="mobile-nav" id="mobile-nav">
+        <a href="/dashboard" class="mobile-nav-item active" data-view="dashboard" data-link>
+            <div class="mobile-nav-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    class="icon icon-tabler icons-tabler-outline icon-tabler-layout">
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                    <path d="M4 4m0 2a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v1a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2z" />
+                    <path d="M4 13m0 2a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v3a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2z" />
+                    <path d="M14 4m0 2a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2z" />
+                </svg>
+            </div>
+            <span class="mobile-nav-text">Dashboard</span>
+        </a>
+
+        <a href="/products" class="mobile-nav-item" data-view="products" data-link>
+            <div class="mobile-nav-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    class="icon icon-tabler icons-tabler-outline icon-tabler-package">
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                    <path d="M12 3l8 4.5l0 9l-8 4.5l-8 -4.5l0 -9l8 -4.5" />
+                    <path d="M12 12l8 -4.5" />
+                    <path d="M12 12l0 9" />
+                    <path d="M12 12l-8 -4.5" />
+                    <path d="M16 5.25l-8 4.5" />
+                </svg>
+            </div>
+            <span class="mobile-nav-text">Productos</span>
+        </a>
+
+        <a href="/movements" class="mobile-nav-item" data-view="sales" data-link>
+            <div class="mobile-nav-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    class="icon icon-tabler icons-tabler-outline icon-tabler-switch-vertical">
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                    <path d="M3 8l4 -4l4 4" />
+                    <path d="M7 4l0 9" />
+                    <path d="M13 16l4 4l4 -4" />
+                    <path d="M17 10l0 10" />
+                </svg>
+            </div>
+            <span class="mobile-nav-text">Movimientos</span>
+        </a>
+
+        <a href="/reports" class="mobile-nav-item" data-view="reports" data-link>
+            <div class="mobile-nav-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    class="icon icon-tabler icons-tabler-outline icon-tabler-report">
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                    <path d="M8 5h-2a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h5.697" />
+                    <path d="M18 14v4h4" />
+                    <path d="M18 11v-4a2 2 0 0 0 -2 -2h-2" />
+                    <path d="M8 3m0 2a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v0a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2z" />
+                    <path d="M18 18m-4 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0" />
+                    <path d="M8 11h4" />
+                    <path d="M8 15h3" />
+                </svg>
+            </div>
+            <span class="mobile-nav-text">Reportes</span>
+        </a>
+
+        <a href="/finance" class="mobile-nav-item" data-view="finance" data-link>
+            <div class="mobile-nav-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    class="icon icon-tabler icons-tabler-outline icon-tabler-pig-money">
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                    <path d="M15 11v.01" />
+                    <path d="M5.173 8.378a3 3 0 1 1 4.656 -1.377" />
+                    <path
+                        d="M16 4v3.803a6.019 6.019 0 0 1 2.658 3.197h1.341a1 1 0 0 1 1 1v2a1 1 0 0 1 -1 1h-1.342c-.336 .95 -.907 1.8 -1.658 2.473v2.027a1.5 1.5 0 0 1 -3 0v-.583a6.04 6.04 0 0 1 -1 .083h-4a6.04 6.04 0 0 1 -1 -.083v.583a1.5 1.5 0 0 1 -3 0v-2l0 -.027a6 6 0 0 1 4 -10.473h2.5l4.5 -3h0z" />
+                </svg>
+            </div>
+            <span class="mobile-nav-text">Finanzas</span>
+        </a>
+    </nav>
+
+    <!-- User Profile Modal -->
+    <dialog class="modal" id="user-profile-modal" style="max-width: 900px; padding: 0;">
+        <div class="user-profile-content">
+            <!-- Main Content -->
+            <div class="user-profile-main">
+                <div class="user-profile-header">
+                    <button type="button" class="profile-close-btn" onclick="window.toggleDialog?.()"
+                        aria-label="Cerrar">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M18 6L6 18" />
+                            <path d="M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+
+                <div class="user-profile-body">
+                    <!-- Profile Picture -->
+                    <div class="user-profile-avatar-section">
+                        <div class="user-profile-avatar-large">
+                            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRi_Gmlxn_WyoSjYy-Za1adFUdYloIJpVbzBVQQG1Z6zhYyjmt_ND8LMURMPBg8srlu2KQ&usqp=CAU"
+                                alt="User Avatar">
+                        </div>
+                        <p class="user-profile-name">Abraham</p>
+                    </div>
+
+                    <!-- Account Details -->
+                    <div class="user-profile-details">
+                        <div class="profile-detail-card">
+                            <div class="profile-detail-label">Correo</div>
+                            <div class="profile-detail-value">abraham@gmail.com</div>
+                        </div>
+
+                        <div class="profile-detail-card">
+                            <div class="profile-detail-label">Nombre de usuario</div>
+                            <div class="profile-detail-value">Abraham</div>
+                            <!--<button class="profile-edit-btn">Editar</button>-->
+                        </div>
+
+                        <div class="">
+                            <button class="profile-logout-btn">Cerrar sesión</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </dialog>
+
+    <!-- Notifications Modal -->
+    <!--<dialog class="modal" id="notifications-modal" style="max-width: 480px; padding: 0;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Notificaciones</h3>
+                <button type="button" class="profile-close-btn" onclick="window.toggleDialog?.()" aria-label="Cerrar">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M18 6L6 18" />
+                        <path d="M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+
+            <div class="modal-body" style="padding: 0;">
+                <div class="notifications-list" id="notifications-list">
+                    Notification items will be rendered here
+                    <div class="notification-item">
+                        <div class="notification-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                            </svg>
+                        </div>
+                        <div class="notification-content">
+                            <div class="notification-title">Nueva venta registrada</div>
+                            <div class="notification-message">Se registró una venta de $150.00</div>
+                            <div class="notification-time">Hace 5 minutos</div>
+                        </div>
+                    </div>
+
+                    <div class="notification-item">
+                        <div class="notification-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                            </svg>
+                        </div>
+                        <div class="notification-content">
+                            <div class="notification-title">Stock bajo</div>
+                            <div class="notification-message">El producto "Zapatos deportivos" tiene stock bajo (5
+                                unidades)</div>
+                            <div class="notification-time">Hace 1 hora</div>
+                        </div>
+                    </div>
+
+                    <div class="notification-item">
+                        <div class="notification-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                            </svg>
+                        </div>
+                        <div class="notification-content">
+                            <div class="notification-title">Movimiento de inventario</div>
+                            <div class="notification-message">Se realizó un ajuste de inventario</div>
+                            <div class="notification-time">Hace 2 horas</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="notifications-empty" id="notifications-empty" style="display: none;">
+                    <div class="notifications-empty-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path
+                                d="M10 5a2 2 0 1 1 4 0a7 7 0 0 1 4 6v3a4 4 0 0 0 2 3h-16a4 4 0 0 0 2 -3v-3a7 7 0 0 1 4 -6" />
+                            <path d="M9 17v1a3 3 0 0 0 6 0v-1" />
+                        </svg>
+                    </div>
+                    <div class="notifications-empty-text">No hay notificaciones</div>
+                </div>
+            </div>
+
+            <div class="modal-footer" style="border-top: 1px solid rgba(255, 255, 255, 0.1);">
+                <button type="button" class="btn ghost" id="btn-mark-all-read">Marcar todas como leídas</button>
+            </div>
+        </div>
+    </dialog>-->
+
+    <!-- Scanner Modal -->
+    <dialog class="scanner-modal" id="scanner-modal">
+        <div class="scanner-modal-content">
+            <div class="scanner-header">
+                <h3 class="scanner-title">Escanear código</h3>
+                <button type="button" class="scanner-close-btn" id="scanner-close-btn" aria-label="Cerrar">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M18 6L6 18" />
+                        <path d="M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+
+            <div class="scanner-body">
+                <div id="scanner-container"></div>
+                <div class="scanner-focus-area">
+                    <div class="scanner-corner top-left"></div>
+                    <div class="scanner-corner top-right"></div>
+                    <div class="scanner-corner bottom-left"></div>
+                    <div class="scanner-corner bottom-right"></div>
+                </div>
+            </div>
+
+            <div class="scanner-footer">
+                <label for="scanner-file-input" class="scanner-action-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                        <polyline points="17 8 12 3 7 8" />
+                        <line x1="12" y1="3" x2="12" y2="15" />
+                    </svg>
+                    <span>Subir imagen</span>
+                    <input type="file" id="scanner-file-input" accept="image/*" style="display: none;">
+                </label>
+                <button type="button" class="scanner-action-btn" id="scanner-flashlight-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M9 2v6l-4 4v8h14v-8l-4-4V2H9z" />
+                        <line x1="12" y1="12" x2="12" y2="22" />
+                    </svg>
+                    <span>Linterna</span>
+                </button>
+            </div>
+        </div>
+    </dialog>
+
+    <script src="/js/router.js"></script>
+    <script src="/js/landing.js"></script>
+    <script type="module" src="/js/app-auth.js"></script>
+    <script src="/js/utils/scanner.js"></script>
+    <script>
+        // toggleDialog function for modals (from landing.js)
+        async function toggleDialog(dialogId) {
+            const viewTransitionClass = "vt-element-animation";
+            const viewTransitionClassClosing = "vt-element-animation-closing";
+
+            if (!dialogId) {
+                const openDialog = document.querySelector("dialog[open]");
+                const originElement = document.querySelector("[origin-element]");
+
+                if (openDialog) {
+                    if (originElement && document.startViewTransition) {
+                        openDialog.style.viewTransitionName = "vt-shared";
+                        openDialog.style.viewTransitionClass = viewTransitionClassClosing;
+
+                        const viewTransition = document.startViewTransition(() => {
+                            originElement.style.viewTransitionName = "vt-shared";
+                            originElement.style.viewTransitionClass = viewTransitionClassClosing;
+                            openDialog.style.viewTransitionName = "";
+                            openDialog.style.viewTransitionClass = "";
+                            openDialog.close();
+                        });
+                        await viewTransition.finished;
+                        originElement.style.viewTransitionName = "";
+                        originElement.style.viewTransitionClass = "";
+                        originElement.removeAttribute("origin-element");
+                    } else {
+                        openDialog.close();
+                    }
+                    document.body.style.overflow = "";
+                }
+                return false;
+            }
+
+            const dialog = document.getElementById(dialogId);
+            if (!dialog) {
+                console.error('Dialog not found:', dialogId);
+                return;
+            }
+
+            // Get origin element from window.event or from attribute
+            const originElement = (window.event && window.event.currentTarget) || document.querySelector("[origin-element]");
+
+            if (originElement && document.startViewTransition) {
+                dialog.style.viewTransitionName = "vt-shared";
+                dialog.style.viewTransitionClass = viewTransitionClass;
+
+                originElement.style.viewTransitionName = "vt-shared";
+                originElement.style.viewTransitionClass = viewTransitionClass;
+                originElement.setAttribute("origin-element", "");
+
+                const viewTransition = document.startViewTransition(() => {
+                    originElement.style.viewTransitionName = "";
+                    originElement.style.viewTransitionClass = "";
+                    dialog.showModal();
+                });
+                await viewTransition.finished;
+                dialog.style.viewTransitionName = "";
+                dialog.style.viewTransitionClass = "";
+            } else {
+                dialog.showModal();
+            }
+
+            document.body.style.overflow = "hidden";
+        }
+
+        // Make toggleDialog available globally
+        window.toggleDialog = toggleDialog;
+
+        // Top bar scanner
+        document.addEventListener('DOMContentLoaded', () => {
+            const scanSearchBtn = document.getElementById('scan-search');
+            const searchInput = document.querySelector('.search-input');
+
+            if (scanSearchBtn && searchInput) {
+                scanSearchBtn.addEventListener('click', () => {
+                    if (window.openScanner) {
+                        window.openScanner(searchInput);
+                    }
+                });
+            }
+
+            // User profile modal
+            const userAvatarBtn = document.getElementById('user-avatar-btn');
+            if (userAvatarBtn && window.toggleDialog) {
+                userAvatarBtn.addEventListener('click', function (event) {
+                    event.currentTarget.setAttribute('origin-element', '');
+                    window.toggleDialog('user-profile-modal');
+                });
+            }
+
+            // Notifications modal
+            const notificationBtn = document.getElementById('notification-btn');
+            if (notificationBtn && window.toggleDialog) {
+                notificationBtn.addEventListener('click', function (event) {
+                    event.currentTarget.setAttribute('origin-element', '');
+                    window.toggleDialog('notifications-modal');
+                });
+            }
+
+            // Profile navigation
+            const profileNavItems = document.querySelectorAll('.profile-nav-item');
+            profileNavItems.forEach(item => {
+                item.addEventListener('click', () => {
+                    profileNavItems.forEach(nav => nav.classList.remove('active'));
+                    item.classList.add('active');
+                    const section = item.dataset.section;
+                    // Placeholder for section switching
+                    console.log('Switch to section:', section);
+                });
+            });
+        });
+    </script>
+</body>
+
+</html>

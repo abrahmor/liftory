@@ -1,0 +1,292 @@
+<!doctype html>
+<html lang="es">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Liftory</title>
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="stylesheet" href="/css/loader.css">
+    <link rel="stylesheet" href="/css/landing.css">
+    <link rel="shortcut icon" href="/assets/icons/logo-test.ico" type="image/x-icon">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css" />
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+</head>
+
+<body>
+    <div class="background">
+        <div class="radial-glow"></div>
+    </div>
+
+    <header class="header">
+        <nav class="navbar">
+            <div class="nav-brand">
+                <a href="#inicio" class="landing-brand-link">
+                    <img src="/assets/icons/leftory-logo.svg" alt="Liftory Logo" class="landing-brand-logo">
+                    <span class="landing-brand-name">Liftory</span>
+                </a>
+            </div>
+            <div class="nav-links">
+                <span class="hover-bg"></span>
+                <a href="#caracteristicas">Características</a>
+                <a href="#planes">Planes</a>
+                <a href="">Contacto</a>
+            </div>
+            <button class="login-btn" onclick="toggleDialog('login-dialog')">
+                Iniciar sesión
+            </button>
+        </nav>
+    </header>
+
+    <main id="inicio" class="landing-main-content">
+        <section class="hero">
+            <div class="logo">
+                <img src="/assets/icons/leftory-logo.svg" alt="">
+            </div>
+            <h1>Tu negocio organizado y sin complicaciones</h1>
+            <p>
+                Controla tus productos, ventas y gastos de manera simple y rápida accesible desde cualquier dispositivo
+            </p>
+            <button class="hero-btn" onclick="toggleDialog('signup-dialog')">
+                Comienza gratis
+            </button>
+        </section>
+    </main>
+
+    <section id="caracteristicas" class="features">
+        <div class="section-header">
+            <h2>Control total de tu inventario</h2>
+            <p>Herramientas poderosas diseñadas para hacer tu gestión más eficiente</p>
+        </div>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="ti ti-layout"></i>
+                </div>
+                <h3>Dashboard Inteligente</h3>
+                <p>Visualiza en un solo lugar el estado general de tu negocio: inventario, ventas, stock bajo y gastos.
+                </p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="ti ti-package"></i>
+                </div>
+                <h3>Gestión de Productos</h3>
+                <p>Agrega, edita o elimina productos fácilmente. Controla cantidades, precios y categorías en pocos
+                    clics.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="ti ti-cash-register"></i>
+                </div>
+                <h3>Control de Ventas</h3>
+                <p>Registra ventas de inventario en segundos. Mantén un historial claro de cada movimiento.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="ti ti-pig-money"></i>
+                </div>
+                <h3>Gestión de Gastos</h3>
+                <p>Registra y organiza tus gastos para llevar un control completo de ingresos y egresos.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="ti ti-report"></i>
+                </div>
+                <h3>Reportes en Tiempo Real</h3>
+                <p>Obtén reportes detallados con métricas clave y gráficos intuitivos para analizar el rendimiento de tu
+                    negocio.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="ti ti-devices"></i>
+                </div>
+                <h3>Interfaz Adaptable</h3>
+                <p>Diseño moderno y responsivo, pensado para usarse desde cualquier dispositivo, en cualquier lugar.</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="planes" class="plans">
+        <div class="section-header">
+            <h2>Planes que crecen con tu negocio</h2>
+            <p>Elige el plan que mejor se adapte a tus necesidades</p>
+        </div>
+        <div class="plans-grid">
+            <div class="plan-card">
+                <div class="plan-header">
+                    <h3>Básico</h3>
+                    <div class="price">
+                        <span class="amount">$5</span>
+                        <span class="period">/mes</span>
+                    </div>
+                </div>
+                <ul class="plan-features">
+                    <li>Hasta 100 productos</li>
+                    <li>Control de stock básico</li>
+                    <li>Historial de movimientos</li>
+                    <li>Sin conexión</li>
+                    <li>1 usuario</li>
+                </ul>
+                <button class="plan-btn" onclick="toggleDialog('signup-dialog')">Empezar gratis</button>
+            </div>
+            <div class="plan-card coming-soon">
+                <div class="plan-header">
+                    <h3>Profesional</h3>
+                    <div class="price">
+                        <span class="amount">$15</span>
+                        <span class="period">/mes</span>
+                    </div>
+                </div>
+                <ul class="plan-features">
+                    <li>Productos ilimitados</li>
+                    <li>Control de stock avanzado</li>
+                    <li>Reportes en tiempo real</li>
+                    <li>Múltiples usuarios</li>
+                    <li>Backup automático</li>
+                </ul>
+                <button class="plan-btn" disabled>Próximamente</button>
+            </div>
+            <div class="plan-card coming-soon">
+                <div class="plan-header">
+                    <h3>Empresarial</h3>
+                    <div class="price">
+                        <span class="amount">$30</span>
+                        <span class="period">/mes</span>
+                    </div>
+                </div>
+                <ul class="plan-features">
+                    <li>Múltiples ubicaciones</li>
+                    <li>Usuarios ilimitados</li>
+                    <li>API personalizada</li>
+                    <li>Soporte prioritario</li>
+                    <li>Integración con POS</li>
+                </ul>
+                <button class="plan-btn" disabled>Próximamente</button>
+            </div>
+        </div>
+    </section>
+
+    <footer id="contacto" class="footer">
+        <div class="footer-content">
+            <div class="footer-brand">
+                <div class="logo-div">
+                    <img src="/assets/icons/leftory-logo.svg" alt="Liftory" class="footer-logo">
+                    <span class="logo-name">Liftory</span>
+                </div>
+                <p>La plataforma moderna para la gestión de inventarios</p>
+                <!--<div class="social-links">
+                    <a href="#" class="social-link"><i class="ti ti-brand-x"></i></a>
+                    <a href="#" class="social-link"><i class="ti ti-brand-github"></i></a>
+                    <a href="#" class="social-link"><i class="ti ti-brand-discord"></i></a>
+                </div>-->
+            </div>
+            <div class="footer-links">
+                <div class="footer-column">
+                    <h4>Producto</h4>
+                    <a href="#caracteristicas">Características</a>
+                    <a href="#planes">Planes</a>
+                    <a href="#seguridad">Seguridad</a>
+                </div>
+                <div class="footer-column">
+                    <h4>Recursos</h4>
+                    <a href="#docs">Documentación</a>
+                    <a href="#api">API</a>
+                    <a href="#guias">Guías</a>
+                </div>
+                <div class="footer-column">
+                    <h4>Empresa</h4>
+                    <a href="#about">Sobre nosotros</a>
+                    <a href="#blog">Blog</a>
+                    <a href="#contacto">Contacto</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <dialog id="login-dialog" class="login-dialog">
+        <button class="close-modal" aria-label="Cerrar" onclick="toggleDialog()">×</button>
+        <div class="modal-header">
+            <h2>Inicia sesión</h2>
+        </div>
+        <form class="auth-form" action="javascript:void(0)">
+            <div class="input-group">
+                <input type="email" id="login-email" placeholder="Escribe tu correo" autocomplete="email" required>
+                <label for="login-email">Correo</label>
+            </div>
+            <div class="input-group">
+                <input type="password" id="login-password" placeholder="Escribe tu contraseña"
+                    autocomplete="current-password" required>
+                <label for="login-password">Contraseña</label>
+                <i class="ti ti-eye-off eye-icon" id="toggle-password"></i>
+            </div>
+            <div class="form-options">
+                <label class="checkbox-label">
+                    <input type="checkbox" class="checkbox-custom"> Recordarme
+                </label>
+                <a href="#" class="form-link">¿Olvidaste tu contraseña?</a>
+            </div>
+            <button type="submit" class="auth-btn">Iniciar sesión</button>
+            <div class="divider"><span>o</span></div>
+            <button type="button" class="google-btn" id="google-login">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/3/3c/Google_Favicon_2025.svg" alt="Google"
+                    class="google-icon">
+                Continuar con Google
+            </button>
+            <p class="switch-auth">¿No tienes cuenta? <a href="#" id="show-signup"
+                    data-switch-dialog="#signup-dialog">Crear cuenta</a></p>
+        </form>
+    </dialog>
+
+    <dialog id="signup-dialog" class="signup-dialog">
+        <button class="close-modal" aria-label="Cerrar" onclick="toggleDialog()">×</button>
+        <div class="modal-header">
+            <h2>Crea tu cuenta</h2>
+        </div>
+        <form id="register-form" class="auth-form">
+            <div class="input-group">
+                <input type="email" id="signup-email" placeholder="Escribe tu correo" required>
+                <label for="signup-email">Correo</label>
+            </div>
+            <div class="input-group">
+                <input type="password" id="signup-password" placeholder="Escribe tu contraseña" required>
+                <label for="signup-password">Contraseña</label>
+                <i class="ti ti-eye-off eye-icon" id="toggle-password"></i>
+            </div>
+            <div class="input-group">
+                <input type="password" id="signup-password-confirm" placeholder="Repite tu contraseña" required>
+                <label for="signup-password-confirm">Repite tu contraseña</label>
+                <i class="ti ti-eye-off eye-icon" id="toggle-password"></i>
+            </div>
+            <label class="terms">
+                <input type="checkbox" id="accept" required>
+                <span>
+                    He leído y acepto la&nbsp;<a href="#" target="_blank" rel="noopener">Política de Privacidad</a>
+                    &nbsp;y los&nbsp;<a href="#" target="_blank" rel="noopener">Términos y Condiciones</a>
+                </span>
+            </label>
+            <button type="submit" class="auth-btn">Crear cuenta</button>
+            <div class="divider"><span>o</span></div>
+            <button type="button" class="google-btn" id="google-register">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/3/3c/Google_Favicon_2025.svg" alt="Google"
+                    class="google-icon">
+                Registrarse con Google
+            </button>
+            <p class="switch-auth">¿Ya tienes cuenta? <a href="#" id="show-login"
+                    data-switch-dialog="#login-dialog">Inicia sesión</a></p>
+        </form>
+    </dialog>
+
+    <script src="/js/landing.js"></script>
+    <script type="module" src="/js/landing-auth.js"></script>
+</body>
+
+</html>

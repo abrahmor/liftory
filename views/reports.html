@@ -1,0 +1,179 @@
+<section class="reports">
+    <div class="reports-header">
+        <div class="header-left">
+            <h2 class="panel-title">Reportes</h2>
+        </div>
+        <div class="header-actions">
+            <!--<button class="btn ghost" id="btn-generate-report">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                    <path d="M9 5h-2a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-12a2 2 0 0 0 -2 -2h-2" />
+                    <path d="M9 3m0 2a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v0a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2z" />
+                    <path d="M9 12l.01 0" />
+                    <path d="M13 12l2 0" />
+                    <path d="M9 16l.01 0" />
+                    <path d="M13 16l2 0" />
+                </svg>
+                Expt XLSX 
+            </button>-->
+            <button class="btn primary" id="btn-export-pdf">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                    <path d="M14 3v4a1 1 0 0 0 1 1h4" />
+                    <path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z" />
+                    <path d="M9 9l1 0" />
+                    <path d="M9 13l6 0" />
+                    <path d="M9 17l6 0" />
+                </svg>
+                Exportar PDF
+            </button>
+        </div>
+    </div>
+
+    <!-- Report Filters -->
+    <div class="reports-toolbar">
+        <div class="filters">
+            <select class="select" id="report-type">
+                <option value="sales">Ventas</option>
+                <option value="purchases">Compras</option>
+                <option value="expenses">Gastos</option>
+                <option value="inventory">Inventario</option>
+                <option value="finance">Finanzas</option>
+                <option value="movements">Movimientos</option>
+            </select>
+            <select class="select" id="report-period">
+                <option value="today">Hoy</option>
+                <option value="week">Esta semana</option>
+                <option value="month" selected>Este mes</option>
+                <option value="quarter">Este trimestre</option>
+                <option value="year">Este año</option>
+                <option value="custom">Personalizado</option>
+            </select>
+            <input type="date" class="select" id="report-date-from" style="display: none;">
+            <input type="date" class="select" id="report-date-to" style="display: none;">
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="reports-stats-grid">
+        <div class="report-stat-card">
+            <div class="report-stat-icon sales">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    class="icon icon-tabler icons-tabler-outline icon-tabler-chart-bar">
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                    <path d="M3 13a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v6a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1z" />
+                    <path d="M15 9a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v10a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1z" />
+                    <path d="M9 5a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v14a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1z" />
+                    <path d="M4 20h14" />
+                </svg>
+            </div>
+            <div class="report-stat-content">
+                <span class="report-stat-value" id="stat-total-sales">ㅤ</span>
+                <span class="report-stat-label">Ventas del período</span>
+            </div>
+        </div>
+
+        <div class="report-stat-card">
+            <div class="report-stat-icon units">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    class="icon icon-tabler icons-tabler-outline icon-tabler-packages">
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                    <path d="M7 16.5l-5 -3l5 -3l5 3v5.5l-5 3z" />
+                    <path d="M2 13.5v5.5l5 3" />
+                    <path d="M7 16.545l5 -3.03" />
+                    <path d="M17 16.5l-5 -3l5 -3l5 3v5.5l-5 3z" />
+                    <path d="M12 19l5 3" />
+                    <path d="M17 16.5l5 -3" />
+                    <path d="M12 13.5v-5.5l-5 -3l5 -3l5 3v5.5" />
+                    <path d="M7 5.03v5.455" />
+                    <path d="M12 8l5 -3" />
+                </svg>
+            </div>
+            <div class="report-stat-content">
+                <span class="report-stat-value" id="stat-units-sold">ㅤ</span>
+                <span class="report-stat-label">Unidades vendidas</span>
+            </div>
+        </div>
+
+        <div class="report-stat-card">
+            <div class="report-stat-icon transactions">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                    <path d="M3 8l4 -4l4 4" />
+                    <path d="M7 4l0 9" />
+                    <path d="M13 16l4 4l4 -4" />
+                    <path d="M17 10l0 10" />
+                </svg>
+            </div>
+            <div class="report-stat-content">
+                <span class="report-stat-value" id="stat-total-transactions">ㅤ</span>
+                <span class="report-stat-label">Total transacciones</span>
+            </div>
+        </div>
+
+        <div class="report-stat-card">
+            <div class="report-stat-icon profit">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                    <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"></path>
+                    <path d="M14.8 9a2 2 0 0 0 -1.8 -1h-2a2 2 0 1 0 0 4h2a2 2 0 1 1 0 4h-2a2 2 0 0 1 -1.8 -1"></path>
+                    <path d="M12 7v10"></path>
+                </svg>
+            </div>
+            <div class="report-stat-content">
+                <span class="report-stat-value" id="stat-total-profit">ㅤ</span>
+                <span class="report-stat-label">Ganancia neta</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Report Panels -->
+    <div class="reports-panels">
+        <!-- Main Chart -->
+        <div class="report-panel chart-panel">
+            <div class="panel-header">
+                <h3 class="panel-title">Tendencia de ventas</h3>
+            </div>
+            <div class="report-chart-container" id="report-chart">
+                <div class="loader-container" id="chart-loader">
+                    <svg class="loader-svg" viewBox="25 25 50 50">
+                        <circle class="loader-circle" cx="50" cy="50" r="20"></circle>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- Top Products -->
+        <div class="report-panel">
+            <div class="panel-header">
+                <h3 class="panel-title">Productos más vendidos</h3>
+            </div>
+            <div class="top-products-list" id="top-products-list">
+                <div class="loader-container" id="products-loader">
+                    <svg class="loader-svg" viewBox="25 25 50 50">
+                        <circle class="loader-circle" cx="50" cy="50" r="20"></circle>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Summary Table -->
+    <div class="report-panel summary-panel">
+        <div class="panel-header">
+            <h3 class="panel-title">Resumen detallado</h3>
+        </div>
+        <div class="report-table-container" id="report-table">
+            <div class="loader-container" id="table-loader">
+                <svg class="loader-svg" viewBox="25 25 50 50">
+                    <circle class="loader-circle" cx="50" cy="50" r="20"></circle>
+                </svg>
+            </div>
+        </div>
+    </div>
+</section>

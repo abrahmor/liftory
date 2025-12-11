@@ -1,0 +1,209 @@
+<section class="products">
+    <div class="products-header">
+        <div class="header-left">
+            <h2 class="panel-title">Productos</h2>
+        </div>
+        <div class="header-actions">
+            <button class="btn primary" id="btn-open-product-modal">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 5v14" />
+                    <path d="M5 12h14" />
+                </svg>
+                Registrar producto
+            </button>
+        </div>
+    </div>
+
+    <div class="products-panel">
+        <div class="products-toolbar">
+            <div class="filters">
+                <select class="select" id="category-filter">
+                    <option value="">Categorías</option>
+                </select>
+                <select class="select" id="stock-filter">
+                    <option value="">Todo el stock</option>
+                    <option value="low">Stock bajo</option>
+                    <option value="normal">Stock normal</option>
+                    <option value="out">Sin stock</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="products-grid" id="products-list">
+            <!-- Cards render here -->
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination" id="products-pagination" style="display: none;">
+            <button class="btn ghost" id="products-prev-btn" disabled>Anterior</button>
+            <span id="products-page-info" style="color: rgba(255, 255, 255, 0.7); font-size: 0.84rem;"></span>
+            <button class="btn ghost" id="products-next-btn">Siguiente</button>
+        </div>
+    </div>
+
+    <!-- Modal Agregar Producto -->
+    <dialog class="modal" id="product-modal">
+        <form method="dialog" class="modal-content" id="product-form">
+            <div class="modal-header">
+                <h3 class="modal-title">Registrar producto</h3>
+            </div>
+
+            <div class="modal-body">
+                <div class="form-grid">
+                    <div class="form-field">
+                        <label for="name">Nombre</label>
+                        <input id="name" name="name" type="text" class="input" placeholder="Ej. Zapatos deportivos"
+                            required>
+                    </div>
+                    <div class="form-field">
+                        <label for="code">Código</label>
+                        <div class="input-with-icon">
+                            <input id="code" name="code" type="text" class="input" placeholder="SKU-001">
+                            <svg class="modal-scan-icon" xmlns="http://www.w3.org/2000/svg" width="22" height="22"
+                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                <path d="M4 7v-1a2 2 0 0 1 2 -2h2" />
+                                <path d="M4 17v1a2 2 0 0 0 2 2h2" />
+                                <path d="M16 4h2a2 2 0 0 1 2 2v1" />
+                                <path d="M16 20h2a2 2 0 0 0 2 -2v-1" />
+                                <path d="M5 12l14 0" />
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="form-field">
+                        <label for="category">Categoría</label>
+                        <input id="category" name="category" type="text" class="input" placeholder="Calzado" required>
+                    </div>
+                    <div class="form-field">
+                        <label for="purchasePrice">Precio de compra</label>
+                        <input id="purchasePrice" name="purchasePrice" type="number" min="0" step="0.01" class="input"
+                            placeholder="0.00" required>
+                    </div>
+                    <div class="form-field">
+                        <label for="salePrice">Precio de venta</label>
+                        <input id="salePrice" name="salePrice" type="number" min="0" step="0.01" class="input"
+                            placeholder="0.00" required>
+                    </div>
+                    <div class="form-field">
+                        <label for="initialStock">Stock inicial</label>
+                        <input id="initialStock" name="initialStock" type="number" min="0" step="1" class="input"
+                            placeholder="0" required>
+                    </div>
+                    <div class="form-field">
+                        <label for="minStock">Stock mínimo</label>
+                        <input id="minStock" name="minStock" type="number" min="0" step="1" class="input"
+                            placeholder="0" required>
+                    </div>
+                    <div class="form-field">
+                        <label for="image">Imagen</label>
+                        <input id="image" name="image" type="url" class="input" placeholder="URL de la imagen">
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn ghost" onclick="toggleDialog()">Cancelar</button>
+                <button type="submit" class="btn primary" id="btn-save-product">Guardar</button>
+            </div>
+        </form>
+    </dialog>
+
+    <!-- Modal Editar Producto -->
+    <dialog class="modal" id="edit-product-modal">
+        <form method="dialog" class="modal-content" id="edit-product-form">
+            <div class="modal-header">
+                <h3 class="modal-title">Editar producto</h3>
+            </div>
+
+            <div class="modal-body">
+                <div class="form-grid">
+                    <div class="form-field">
+                        <label for="edit-name">Nombre</label>
+                        <input id="edit-name" name="name" type="text" class="input" placeholder="Ej. Zapatos deportivos"
+                            required>
+                    </div>
+                    <div class="form-field">
+                        <label for="edit-code">Código</label>
+                        <div class="input-with-icon">
+                            <input id="edit-code" name="code" type="text" class="input" placeholder="SKU-001" required>
+                            <svg class="modal-scan-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                <path d="M4 7v-1a2 2 0 0 1 2 -2h2" />
+                                <path d="M4 17v1a2 2 0 0 0 2 2h2" />
+                                <path d="M16 4h2a2 2 0 0 1 2 2v1" />
+                                <path d="M16 20h2a2 2 0 0 0 2 -2v-1" />
+                                <path d="M5 12l14 0" />
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="form-field">
+                        <label for="edit-category">Categoría</label>
+                        <input id="edit-category" name="category" type="text" class="input" placeholder="Calzado"
+                            required>
+                    </div>
+                    <div class="form-field">
+                        <label for="edit-purchasePrice">Precio de compra</label>
+                        <input id="edit-purchasePrice" name="purchasePrice" type="number" min="0" step="0.01"
+                            class="input" placeholder="0.00" required>
+                    </div>
+                    <div class="form-field">
+                        <label for="edit-salePrice">Precio de venta</label>
+                        <input id="edit-salePrice" name="salePrice" type="number" min="0" step="0.01" class="input"
+                            placeholder="0.00" required>
+                    </div>
+                    <div class="form-field">
+                        <label for="edit-initialStock">Stock actual</label>
+                        <input id="edit-initialStock" name="initialStock" type="number" min="0" step="1" class="input"
+                            placeholder="0" required>
+                        <small
+                            style="color: rgba(255, 255, 255, 0.6); font-size: 0.8rem; margin-top: 4px; display: block;">
+                            Se creará un ajuste automático al actualizar el stock
+                        </small>
+                    </div>
+                    <div class="form-field">
+                        <label for="edit-minStock">Stock mínimo</label>
+                        <input id="edit-minStock" name="minStock" type="number" min="0" step="1" class="input"
+                            placeholder="0" required>
+                    </div>
+                    <div class="form-field">
+                        <label for="edit-image">Imagen</label>
+                        <input id="edit-image" name="image" type="url" class="input" placeholder="URL de la imagen">
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn ghost" onclick="toggleDialog()">Cancelar</button>
+                <button type="submit" class="btn primary" id="btn-update-product"
+                    onclick="toggleDialog()">Actualizar</button>
+            </div>
+        </form>
+    </dialog>
+
+    <!-- Modal Confirmar Eliminación -->
+    <dialog class="modal" id="delete-product-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Confirmar eliminación</h3>
+            </div>
+
+            <div class="modal-body">
+                <p class="delete-product-p">¿Estás seguro de que quieres eliminar este producto? Esta acción no se puede
+                    deshacer.</p>
+                <div class="product-preview" id="delete-product-preview">
+                    <!-- Product info will be inserted here -->
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn ghost" onclick="toggleDialog()">Cancelar</button>
+                <button type="button" class="btn danger" id="btn-confirm-delete"><i
+                        class="ti ti-trash"></i>Eliminar</button>
+            </div>
+        </div>
+    </dialog>
+</section>
