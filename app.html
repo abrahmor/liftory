@@ -466,24 +466,27 @@
     <script src="/js/utils/scanner.js"></script>
     <script>
         // toggleDialog function for modals (from landing.js)
-        async function toggleDialog(dialogId) {
+        async function toggleDialog(dialogId, evt) {
             const viewTransitionClass = "vt-element-animation";
             const viewTransitionClassClosing = "vt-element-animation-closing";
+            const supportsViewTransition = typeof document.startViewTransition === 'function';
 
             if (!dialogId) {
                 const openDialog = document.querySelector("dialog[open]");
                 const originElement = document.querySelector("[origin-element]");
 
                 if (openDialog) {
-                    if (originElement && document.startViewTransition) {
+                    if (originElement && supportsViewTransition) {
                         openDialog.style.viewTransitionName = "vt-shared";
                         openDialog.style.viewTransitionClass = viewTransitionClassClosing;
 
                         const viewTransition = document.startViewTransition(() => {
                             originElement.style.viewTransitionName = "vt-shared";
                             originElement.style.viewTransitionClass = viewTransitionClassClosing;
+
                             openDialog.style.viewTransitionName = "";
                             openDialog.style.viewTransitionClass = "";
+
                             openDialog.close();
                         });
                         await viewTransition.finished;
@@ -492,6 +495,7 @@
                         originElement.removeAttribute("origin-element");
                     } else {
                         openDialog.close();
+                        originElement?.removeAttribute("origin-element");
                     }
                     document.body.style.overflow = "";
                 }
@@ -504,10 +508,9 @@
                 return;
             }
 
-            // Get origin element from window.event or from attribute
-            const originElement = (window.event && window.event.currentTarget) || document.querySelector("[origin-element]");
+            const originElement = evt?.currentTarget || document.querySelector("[origin-element]");
 
-            if (originElement && document.startViewTransition) {
+            if (originElement && supportsViewTransition) {
                 dialog.style.viewTransitionName = "vt-shared";
                 dialog.style.viewTransitionClass = viewTransitionClass;
 
@@ -525,6 +528,7 @@
                 dialog.style.viewTransitionClass = "";
             } else {
                 dialog.showModal();
+                originElement?.setAttribute("origin-element", "");
             }
 
             document.body.style.overflow = "hidden";
@@ -551,7 +555,7 @@
             if (userAvatarBtn && window.toggleDialog) {
                 userAvatarBtn.addEventListener('click', function (event) {
                     event.currentTarget.setAttribute('origin-element', '');
-                    window.toggleDialog('user-profile-modal');
+                    window.toggleDialog('user-profile-modal', event);
                 });
             }
 
@@ -560,7 +564,7 @@
             if (notificationBtn && window.toggleDialog) {
                 notificationBtn.addEventListener('click', function (event) {
                     event.currentTarget.setAttribute('origin-element', '');
-                    window.toggleDialog('notifications-modal');
+                    window.toggleDialog('notifications-modal', event);
                 });
             }
 

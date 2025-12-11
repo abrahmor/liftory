@@ -73,7 +73,7 @@ export function init() {
     // Open modal
     openBtn.addEventListener('click', (event) => {
         event.currentTarget.setAttribute('origin-element', '');
-        window.toggleDialog?.('movement-modal');
+        window.toggleDialog?.('movement-modal', event);
         selectedProduct = null;
         selectedProductField.style.display = 'none';
         productSearch.value = '';
