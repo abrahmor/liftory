@@ -74,55 +74,67 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-async function toggleDialog(dialogId) {
+async function toggleDialog(dialogId, evt) {
     const viewTransitionClass = "vt-element-animation";
     const viewTransitionClassClosing = "vt-element-animation-closing";
+    const supportsViewTransition = typeof document.startViewTransition === 'function';
 
     if (!dialogId) {
         const openDialog = document.querySelector("dialog[open]");
         const originElement = document.querySelector("[origin-element]");
 
-        openDialog.style.viewTransitionName = "vt-shared";
-        openDialog.style.viewTransitionClass = viewTransitionClassClosing;
+        if (openDialog) {
+            if (originElement && supportsViewTransition) {
+                openDialog.style.viewTransitionName = "vt-shared";
+                openDialog.style.viewTransitionClass = viewTransitionClassClosing;
 
-        const viewTransition = document.startViewTransition(() => {
-            originElement.style.viewTransitionName = "vt-shared";
-            originElement.style.viewTransitionClass = viewTransitionClassClosing;
+                const viewTransition = document.startViewTransition(() => {
+                    originElement.style.viewTransitionName = "vt-shared";
+                    originElement.style.viewTransitionClass = viewTransitionClassClosing;
 
-            openDialog.style.viewTransitionName = "";
-            openDialog.style.viewTransitionClass = "";
+                    openDialog.style.viewTransitionName = "";
+                    openDialog.style.viewTransitionClass = "";
 
-            openDialog.close();
-        });
-        await viewTransition.finished;
-        originElement.style.viewTransitionName = "";
-        originElement.style.viewTransitionClass = "";
-        originElement.removeAttribute("origin-element");
-
-        // enable page scroll again
-        document.body.style.overflow = "";
+                    openDialog.close();
+                });
+                await viewTransition.finished;
+                originElement.style.viewTransitionName = "";
+                originElement.style.viewTransitionClass = "";
+                originElement.removeAttribute("origin-element");
+            } else {
+                openDialog.close();
+                originElement?.removeAttribute("origin-element");
+            }
+            // enable page scroll again
+            document.body.style.overflow = "";
+        }
 
         return false;
     }
 
     const dialog = document.getElementById(dialogId);
-    const originElement = event.currentTarget;
+    const originElement = evt?.currentTarget || document.querySelector("[origin-element]");
 
-    dialog.style.viewTransitionName = "vt-shared";
-    dialog.style.viewTransitionClass = viewTransitionClass;
+    if (originElement && supportsViewTransition) {
+        dialog.style.viewTransitionName = "vt-shared";
+        dialog.style.viewTransitionClass = viewTransitionClass;
 
-    originElement.style.viewTransitionName = "vt-shared";
-    originElement.style.viewTransitionClass = viewTransitionClass;
-    originElement.setAttribute("origin-element", "");
+        originElement.style.viewTransitionName = "vt-shared";
+        originElement.style.viewTransitionClass = viewTransitionClass;
+        originElement.setAttribute("origin-element", "");
 
-    const viewTransition = document.startViewTransition(() => {
-        originElement.style.viewTransitionName = "";
-        originElement.style.viewTransitionClass = "";
+        const viewTransition = document.startViewTransition(() => {
+            originElement.style.viewTransitionName = "";
+            originElement.style.viewTransitionClass = "";
+            dialog.showModal();
+        });
+        await viewTransition.finished;
+        dialog.style.viewTransitionName = "";
+        dialog.style.viewTransitionClass = "";
+    } else {
         dialog.showModal();
-    });
-    await viewTransition.finished;
-    dialog.style.viewTransitionName = "";
-    dialog.style.viewTransitionClass = "";
+        originElement?.setAttribute("origin-element", "");
+    }
 
     // lock page scroll while dialog is open
     document.body.style.overflow = "hidden";
