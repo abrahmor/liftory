@@ -83,9 +83,10 @@ function setupExpenseModal() {
   openBtn.addEventListener('click', (event) => {
     event.currentTarget.setAttribute('origin-element', '');
     if (window.toggleDialog) {
-      window.toggleDialog('expense-modal');
+      window.toggleDialog('expense-modal', event);
     } else {
       modal.showModal();
+      document.body.style.overflow = 'hidden';
     }
   });
 
@@ -149,7 +150,11 @@ function setupExpenseModal() {
       if (dateInput) dateInput.value = todayStr;
 
       // Close modal
-      closeModalWithTransition(modal);
+      if (window.toggleDialog) {
+        window.toggleDialog();
+      } else {
+        closeModalWithTransition(modal);
+      }
 
     } catch (error) {
       console.error('Error saving expense:', error);
@@ -162,7 +167,8 @@ function setupExpenseModal() {
 
 function closeModalWithTransition(modal) {
   const originElement = document.querySelector('[origin-element]');
-  if (originElement && document.startViewTransition) {
+  const supportsViewTransition = typeof document.startViewTransition === 'function';
+  if (originElement && supportsViewTransition) {
     const viewTransitionClassClosing = "vt-element-animation-closing";
 
     modal.style.viewTransitionName = "vt-shared";
