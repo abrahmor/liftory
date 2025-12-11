@@ -1,4 +1,3 @@
-
 // products.js - vista productos
 import { getAllProducts, createProduct, updateProduct, deleteProduct, subscribeToProducts } from '/js/services/products.service.js';
 import { getAllMovements, createMovement } from '/js/services/movements.service.js';
@@ -111,38 +110,12 @@ export async function init() {
     openBtn.addEventListener('click', function(event) {
         event.preventDefault();
         event.stopPropagation();
-        
-        // Set origin element for transition
+
         this.setAttribute('origin-element', '');
-        
-        // Try to use toggleDialog if available, otherwise open directly
+
         if (window.toggleDialog && typeof window.toggleDialog === 'function') {
-            try {
-                // Store the button as currentTarget in a way toggleDialog can access
-                const button = this;
-                const originalEvent = window.event;
-                
-                // Create a synthetic event object
-                window.event = {
-                    currentTarget: button
-                };
-                
-                window.toggleDialog('product-modal');
-                
-                // Restore original event if it existed
-                if (originalEvent) {
-                    window.event = originalEvent;
-                } else {
-                    delete window.event;
-                }
-            } catch (error) {
-                console.error('Error calling toggleDialog:', error);
-                // Fallback: open modal directly
-                modal.showModal();
-                document.body.style.overflow = "hidden";
-            }
+            window.toggleDialog('product-modal', event);
         } else {
-            // Open modal directly
             modal.showModal();
             document.body.style.overflow = "hidden";
         }
@@ -190,32 +163,8 @@ export async function init() {
             return;
         }
         
-        // Close with transition
-        const originElement = document.querySelector('[origin-element]');
-        if (originElement && window.toggleDialog) {
-            const viewTransitionClassClosing = "vt-element-animation-closing";
-            const dialog = document.querySelector('dialog[open]');
-            
-            if (dialog && originElement) {
-                dialog.style.viewTransitionName = "vt-shared";
-                dialog.style.viewTransitionClass = viewTransitionClassClosing;
-                
-                originElement.style.viewTransitionName = "vt-shared";
-                originElement.style.viewTransitionClass = viewTransitionClassClosing;
-                
-                const viewTransition = document.startViewTransition(() => {
-                    dialog.close();
-                    originElement.style.viewTransitionName = "";
-                    originElement.style.viewTransitionClass = "";
-                    dialog.style.viewTransitionName = "";
-                    dialog.style.viewTransitionClass = "";
-                    document.body.style.overflow = "";
-                });
-                
-                viewTransition.finished.then(() => {
-                    originElement.removeAttribute('origin-element');
-                });
-            }
+        if (window.toggleDialog) {
+            window.toggleDialog();
         } else {
             const dialog = document.querySelector('dialog[open]');
             if (dialog) {
@@ -314,51 +263,9 @@ export async function init() {
         editForm.reset();
         currentEditId = null;
 
-        // Close with transition - find the origin element
-        const originElement = document.querySelector('[origin-element]');
-        if (originElement) {
-            // Create a fake event with the origin element for closing transition
-            const fakeEvent = { currentTarget: originElement };
-
-            // Temporarily override toggleDialog to use our origin element
-            const originalToggleDialog = window.toggleDialog;
-            window.toggleDialog = function (dialogId) {
-                if (!dialogId) {
-                    // Handle closing with our origin element
-                    const viewTransitionClassClosing = "vt-element-animation-closing";
-                    const dialog = document.querySelector('dialog[open]');
-
-                    if (dialog && originElement) {
-                        dialog.style.viewTransitionName = "vt-shared";
-                        dialog.style.viewTransitionClass = viewTransitionClassClosing;
-
-                        originElement.style.viewTransitionName = "vt-shared";
-                        originElement.style.viewTransitionClass = viewTransitionClassClosing;
-
-                        const viewTransition = document.startViewTransition(() => {
-                            dialog.close();
-                            originElement.style.viewTransitionName = "";
-                            originElement.style.viewTransitionClass = "";
-                            dialog.style.viewTransitionName = "";
-                            dialog.style.viewTransitionClass = "";
-                            document.body.style.overflow = "";
-                        });
-
-                        viewTransition.finished.then(() => {
-                            originElement.removeAttribute('origin-element');
-                        });
-                    }
-                } else {
-                    return originalToggleDialog.call(this, dialogId);
-                }
-            };
-
+        if (window.toggleDialog) {
             window.toggleDialog();
-
-            // Restore original function
-            window.toggleDialog = originalToggleDialog;
         } else {
-            // Fallback to direct close
             const editModal = document.getElementById('edit-product-modal');
             if (editModal && editModal.open) {
                 editModal.close();
@@ -387,51 +294,9 @@ export async function init() {
             }
         }
 
-        // Close with transition - find the origin element
-        const originElement = document.querySelector('[origin-element]');
-        if (originElement) {
-            // Create a fake event with the origin element for closing transition
-            const fakeEvent = { currentTarget: originElement };
-
-            // Temporarily override toggleDialog to use our origin element
-            const originalToggleDialog = window.toggleDialog;
-            window.toggleDialog = function (dialogId) {
-                if (!dialogId) {
-                    // Handle closing with our origin element
-                    const viewTransitionClassClosing = "vt-element-animation-closing";
-                    const dialog = document.querySelector('dialog[open]');
-
-                    if (dialog && originElement) {
-                        dialog.style.viewTransitionName = "vt-shared";
-                        dialog.style.viewTransitionClass = viewTransitionClassClosing;
-
-                        originElement.style.viewTransitionName = "vt-shared";
-                        originElement.style.viewTransitionClass = viewTransitionClassClosing;
-
-                        const viewTransition = document.startViewTransition(() => {
-                            dialog.close();
-                            originElement.style.viewTransitionName = "";
-                            originElement.style.viewTransitionClass = "";
-                            dialog.style.viewTransitionName = "";
-                            dialog.style.viewTransitionClass = "";
-                            document.body.style.overflow = "";
-                        });
-
-                        viewTransition.finished.then(() => {
-                            originElement.removeAttribute('origin-element');
-                        });
-                    }
-                } else {
-                    return originalToggleDialog.call(this, dialogId);
-                }
-            };
-
+        if (window.toggleDialog) {
             window.toggleDialog();
-
-            // Restore original function
-            window.toggleDialog = originalToggleDialog;
         } else {
-            // Fallback to direct close
             const deleteModal = document.getElementById('delete-product-modal');
             if (deleteModal && deleteModal.open) {
                 deleteModal.close();
@@ -504,47 +369,15 @@ export async function init() {
                 currentEditId = productId;
                 await populateEditForm(product);
 
-                // Set origin element and call toggleDialog directly
                 editBtn.setAttribute('origin-element', '');
 
-                // Temporarily store the original toggleDialog
-                const originalToggleDialog = window.toggleDialog;
-
-                // Override toggleDialog to use our button as origin
-                window.toggleDialog = function (dialogId) {
-                    if (!dialogId) {
-                        // Handle closing - use original function
-                        return originalToggleDialog.call(this);
-                    }
-
-                    const viewTransitionClass = "vt-element-animation";
-                    const dialog = document.getElementById(dialogId);
-                    const originElement = editBtn; // Use the edit button directly
-
-                    dialog.style.viewTransitionName = "vt-shared";
-                    dialog.style.viewTransitionClass = viewTransitionClass;
-
-                    originElement.style.viewTransitionName = "vt-shared";
-                    originElement.style.viewTransitionClass = viewTransitionClass;
-                    originElement.setAttribute("origin-element", "");
-
-                    const viewTransition = document.startViewTransition(() => {
-                        originElement.style.viewTransitionName = "";
-                        originElement.style.viewTransitionClass = "";
-                        dialog.showModal();
-                    });
-
-                    viewTransition.finished.then(() => {
-                        dialog.style.viewTransitionName = "";
-                        dialog.style.viewTransitionClass = "";
-                        document.body.style.overflow = "hidden";
-                    });
-                };
-
-                window.toggleDialog('edit-product-modal');
-
-                // Restore original toggleDialog
-                window.toggleDialog = originalToggleDialog;
+                if (window.toggleDialog) {
+                    window.toggleDialog('edit-product-modal', { currentTarget: editBtn });
+                } else {
+                    const editModal = document.getElementById('edit-product-modal');
+                    editModal?.showModal();
+                    document.body.style.overflow = "hidden";
+                }
             }
         }
 
@@ -560,47 +393,15 @@ export async function init() {
                 currentEditId = productId;
                 populateDeletePreview(product);
 
-                // Set origin element and call toggleDialog directly
                 deleteBtn.setAttribute('origin-element', '');
 
-                // Temporarily store the original toggleDialog
-                const originalToggleDialog = window.toggleDialog;
-
-                // Override toggleDialog to use our button as origin
-                window.toggleDialog = function (dialogId) {
-                    if (!dialogId) {
-                        // Handle closing - use original function
-                        return originalToggleDialog.call(this);
-                    }
-
-                    const viewTransitionClass = "vt-element-animation";
-                    const dialog = document.getElementById(dialogId);
-                    const originElement = deleteBtn; // Use the delete button directly
-
-                    dialog.style.viewTransitionName = "vt-shared";
-                    dialog.style.viewTransitionClass = viewTransitionClass;
-
-                    originElement.style.viewTransitionName = "vt-shared";
-                    originElement.style.viewTransitionClass = viewTransitionClass;
-                    originElement.setAttribute("origin-element", "");
-
-                    const viewTransition = document.startViewTransition(() => {
-                        originElement.style.viewTransitionName = "";
-                        originElement.style.viewTransitionClass = "";
-                        dialog.showModal();
-                    });
-
-                    viewTransition.finished.then(() => {
-                        dialog.style.viewTransitionName = "";
-                        dialog.style.viewTransitionClass = "";
-                        document.body.style.overflow = "hidden";
-                    });
-                };
-
-                window.toggleDialog('delete-product-modal');
-
-                // Restore original toggleDialog
-                window.toggleDialog = originalToggleDialog;
+                if (window.toggleDialog) {
+                    window.toggleDialog('delete-product-modal', { currentTarget: deleteBtn });
+                } else {
+                    const deleteModal = document.getElementById('delete-product-modal');
+                    deleteModal?.showModal();
+                    document.body.style.overflow = "hidden";
+                }
             }
         }
     });
