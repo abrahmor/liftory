@@ -40,7 +40,7 @@
                 <a href="#planes">Planes</a>
                 <a href="">Contacto</a>
             </div>
-            <button class="login-btn" onclick="toggleDialog('login-dialog')">
+            <button class="login-btn" onclick="toggleDialog('login-dialog', event)">
                 Iniciar sesión
             </button>
         </nav>
@@ -55,7 +55,7 @@
             <p>
                 Controla tus productos, ventas y gastos de manera simple y rápida accesible desde cualquier dispositivo
             </p>
-            <button class="hero-btn" onclick="toggleDialog('signup-dialog')">
+            <button class="hero-btn" onclick="toggleDialog('signup-dialog', event)">
                 Comienza gratis
             </button>
         </section>
@@ -136,7 +136,7 @@
                     <li>Sin conexión</li>
                     <li>1 usuario</li>
                 </ul>
-                <button class="plan-btn" onclick="toggleDialog('signup-dialog')">Empezar gratis</button>
+                <button class="plan-btn" onclick="toggleDialog('signup-dialog', event)">Empezar gratis</button>
             </div>
             <div class="plan-card coming-soon">
                 <div class="plan-header">

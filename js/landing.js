@@ -74,55 +74,103 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-async function toggleDialog(dialogId) {
+async function toggleDialog(dialogId, evt) {
     const viewTransitionClass = "vt-element-animation";
     const viewTransitionClassClosing = "vt-element-animation-closing";
+    const supportsViewTransition = typeof document.startViewTransition === 'function';
+    const useFallback = !supportsViewTransition;
+
+    const openWithFallback = (dialog, originElement) => {
+        dialog.classList.add('dialog-fallback');
+        dialog.showModal();
+
+        requestAnimationFrame(() => {
+            dialog.classList.remove('dialog-fallback-closing');
+            dialog.classList.add('dialog-fallback-open');
+        });
+
+        originElement?.setAttribute('origin-element', '');
+    };
+
+    const closeWithFallback = (dialog, originElement) => {
+        dialog.classList.add('dialog-fallback');
+        dialog.classList.remove('dialog-fallback-open');
+        dialog.classList.add('dialog-fallback-closing');
+
+        let finished = false;
+        const finish = () => {
+            if (finished) return;
+            finished = true;
+            dialog.close();
+            dialog.classList.remove('dialog-fallback-closing');
+            originElement?.removeAttribute('origin-element');
+        };
+
+        dialog.addEventListener('transitionend', finish, { once: true });
+        // Safety timeout in case transitionend doesn't fire
+        setTimeout(finish, 220);
+    };
 
     if (!dialogId) {
         const openDialog = document.querySelector("dialog[open]");
         const originElement = document.querySelector("[origin-element]");
 
-        openDialog.style.viewTransitionName = "vt-shared";
-        openDialog.style.viewTransitionClass = viewTransitionClassClosing;
+        if (openDialog) {
+            if (originElement && supportsViewTransition) {
+                openDialog.style.viewTransitionName = "vt-shared";
+                openDialog.style.viewTransitionClass = viewTransitionClassClosing;
 
-        const viewTransition = document.startViewTransition(() => {
-            originElement.style.viewTransitionName = "vt-shared";
-            originElement.style.viewTransitionClass = viewTransitionClassClosing;
+                const viewTransition = document.startViewTransition(() => {
+                    originElement.style.viewTransitionName = "vt-shared";
+                    originElement.style.viewTransitionClass = viewTransitionClassClosing;
 
-            openDialog.style.viewTransitionName = "";
-            openDialog.style.viewTransitionClass = "";
+                    openDialog.style.viewTransitionName = "";
+                    openDialog.style.viewTransitionClass = "";
 
-            openDialog.close();
-        });
-        await viewTransition.finished;
-        originElement.style.viewTransitionName = "";
-        originElement.style.viewTransitionClass = "";
-        originElement.removeAttribute("origin-element");
-
-        // enable page scroll again
-        document.body.style.overflow = "";
+                    openDialog.close();
+                });
+                await viewTransition.finished;
+                originElement.style.viewTransitionName = "";
+                originElement.style.viewTransitionClass = "";
+                originElement.removeAttribute("origin-element");
+            } else if (useFallback) {
+                closeWithFallback(openDialog, originElement);
+            } else {
+                openDialog.close();
+                originElement?.removeAttribute("origin-element");
+            }
+            // enable page scroll again
+            document.body.style.overflow = "";
+        }
 
         return false;
     }
 
     const dialog = document.getElementById(dialogId);
-    const originElement = event.currentTarget;
+    const originElement = evt?.currentTarget || document.querySelector("[origin-element]");
 
-    dialog.style.viewTransitionName = "vt-shared";
-    dialog.style.viewTransitionClass = viewTransitionClass;
+    if (originElement && supportsViewTransition) {
+        dialog.style.viewTransitionName = "vt-shared";
+        dialog.style.viewTransitionClass = viewTransitionClass;
 
-    originElement.style.viewTransitionName = "vt-shared";
-    originElement.style.viewTransitionClass = viewTransitionClass;
-    originElement.setAttribute("origin-element", "");
+        originElement.style.viewTransitionName = "vt-shared";
+        originElement.style.viewTransitionClass = viewTransitionClass;
+        originElement.setAttribute("origin-element", "");
 
-    const viewTransition = document.startViewTransition(() => {
-        originElement.style.viewTransitionName = "";
-        originElement.style.viewTransitionClass = "";
+        const viewTransition = document.startViewTransition(() => {
+            originElement.style.viewTransitionName = "";
+            originElement.style.viewTransitionClass = "";
+            dialog.showModal();
+        });
+        await viewTransition.finished;
+        dialog.style.viewTransitionName = "";
+        dialog.style.viewTransitionClass = "";
+    } else if (useFallback) {
+        openWithFallback(dialog, originElement);
+    } else {
         dialog.showModal();
-    });
-    await viewTransition.finished;
-    dialog.style.viewTransitionName = "";
-    dialog.style.viewTransitionClass = "";
+        originElement?.setAttribute("origin-element", "");
+    }
 
     // lock page scroll while dialog is open
     document.body.style.overflow = "hidden";
