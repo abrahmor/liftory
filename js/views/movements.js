@@ -73,7 +73,7 @@ export function init() {
     // Open modal
     openBtn.addEventListener('click', (event) => {
         event.currentTarget.setAttribute('origin-element', '');
-        window.toggleDialog?.('movement-modal');
+        window.toggleDialog?.('movement-modal', event);
         selectedProduct = null;
         selectedProductField.style.display = 'none';
         productSearch.value = '';
@@ -394,35 +394,14 @@ export function init() {
         const todayStr = `${todayDate.getFullYear()}-${String(todayDate.getMonth() + 1).padStart(2, '0')}-${String(todayDate.getDate()).padStart(2, '0')}`;
         document.getElementById('movement-date').value = todayStr;
         
-        // Close with transition
+        // Close modal using shared helper for proper fallback on browsers without View Transitions
         const originElement = document.querySelector('[origin-element]');
-        if (originElement) {
-            const viewTransitionClassClosing = "vt-element-animation-closing";
-            const dialog = document.querySelector('dialog[open]');
-            
-            if (dialog && originElement) {
-                dialog.style.viewTransitionName = "vt-shared";
-                dialog.style.viewTransitionClass = viewTransitionClassClosing;
-                
-                originElement.style.viewTransitionName = "vt-shared";
-                originElement.style.viewTransitionClass = viewTransitionClassClosing;
-                
-                const viewTransition = document.startViewTransition(() => {
-                    dialog.close();
-                    originElement.style.viewTransitionName = "";
-                    originElement.style.viewTransitionClass = "";
-                    dialog.style.viewTransitionName = "";
-                    dialog.style.viewTransitionClass = "";
-                    document.body.style.overflow = "";
-                });
-                
-                viewTransition.finished.then(() => {
-                    originElement.removeAttribute('origin-element');
-                });
-            }
+        if (window.toggleDialog) {
+            window.toggleDialog(null, originElement ? { currentTarget: originElement } : undefined);
         } else {
             modal.close();
             document.body.style.overflow = "";
+            originElement?.removeAttribute('origin-element');
         }
     });
 
