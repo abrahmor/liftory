@@ -2,7 +2,6 @@
 import { getCurrentUser, onAuthStateChanged } from '/js/auth.js';
 import { getAllMovements } from '/js/services/movements.service.js';
 import { getAllExpenses, createExpense, subscribeToExpenses } from '/js/services/expenses.service.js';
-import { setButtonLoading } from '/js/utils/loader.js';
 
 let unsubscribeExpenses = null;
 let financeChartInstance = null;
@@ -84,10 +83,9 @@ function setupExpenseModal() {
   openBtn.addEventListener('click', (event) => {
     event.currentTarget.setAttribute('origin-element', '');
     if (window.toggleDialog) {
-      window.toggleDialog('expense-modal', event);
+      window.toggleDialog('expense-modal');
     } else {
       modal.showModal();
-      document.body.style.overflow = 'hidden';
     }
   });
 
@@ -127,14 +125,17 @@ function setupExpenseModal() {
     console.log('Expense data:', expense);
 
     // Disable button and show loading
-    setButtonLoading(submitBtn, true);
+    submitBtn.disabled = true;
+    const originalText = submitBtn.innerHTML;
+    submitBtn.innerHTML = 'Guardando...';
 
     try {
       await createExpense(expense);
       console.log('Expense saved successfully');
 
       // Restore button
-      setButtonLoading(submitBtn, false);
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = originalText;
 
       // Reload data
       await Promise.all([
@@ -148,15 +149,12 @@ function setupExpenseModal() {
       if (dateInput) dateInput.value = todayStr;
 
       // Close modal
-      if (window.toggleDialog) {
-        window.toggleDialog();
-      } else {
-        closeModalWithTransition(modal);
-      }
+      closeModalWithTransition(modal);
 
     } catch (error) {
       console.error('Error saving expense:', error);
-      setButtonLoading(submitBtn, false);
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = originalText;
       alert('Error al guardar el gasto: ' + error.message);
     }
   });
@@ -164,8 +162,7 @@ function setupExpenseModal() {
 
 function closeModalWithTransition(modal) {
   const originElement = document.querySelector('[origin-element]');
-  const supportsViewTransition = typeof document.startViewTransition === 'function';
-  if (originElement && supportsViewTransition) {
+  if (originElement && document.startViewTransition) {
     const viewTransitionClassClosing = "vt-element-animation-closing";
 
     modal.style.viewTransitionName = "vt-shared";

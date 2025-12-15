@@ -87,32 +87,6 @@ body {
   animation: vt-fade-in 200ms both cubic-bezier(0.75, 0, 0.41, -0.06);
 }
 
-/* Dialog fallback animations (for browsers without View Transitions) */
-dialog.dialog-fallback {
-  transform: translate(-50%, -50%) scale(0.985);
-  opacity: 0;
-  transition: opacity 180ms ease, transform 180ms ease;
-}
-
-dialog.dialog-fallback::backdrop {
-  transition: opacity 180ms ease;
-  opacity: 0;
-}
-
-dialog.dialog-fallback-open {
-  opacity: 1;
-  transform: translate(-50%, -50%) scale(1);
-}
-
-dialog.dialog-fallback-open::backdrop {
-  opacity: 1;
-}
-
-dialog.dialog-fallback-closing {
-  opacity: 0;
-  transform: translate(-50%, -50%) scale(0.98);
-}
-
 /* Sidebar Styles */
 .sidebar {
   position: fixed;
