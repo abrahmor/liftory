@@ -1,5 +1,5 @@
 // reports.js - vista reportes
-import { getCurrentUser, onAuthStateChanged } from '/js/auth.js';
+import { getCurrentUser, onAuthStateChanged, waitForAuth } from '/js/auth.js';
 import { getAllProducts } from '/js/services/products.service.js';
 import { getAllMovements } from '/js/services/movements.service.js';
 import { getAllExpenses } from '/js/services/expenses.service.js';
@@ -9,31 +9,16 @@ let reportsChartInstance = null;
 export async function init() {
   console.log('Reports view initialized');
 
-  const user = getCurrentUser();
+  const user = await waitForAuth();
   if (!user) {
-    return new Promise((resolve) => {
-      const unsubscribe = onAuthStateChanged((authUser) => {
-        if (authUser) {
-          unsubscribe();
-          initializeReports();
-          resolve();
-        }
-      });
-    });
+    console.warn('User not authenticated, redirecting...');
+    return;
   }
 
   await initializeReports();
 }
 
 async function initializeReports() {
-  const user = getCurrentUser();
-  if (!user) {
-    setTimeout(initializeReports, 500);
-    return;
-  }
-
-  await new Promise(resolve => setTimeout(resolve, 100));
-
   // Setup filters
   setupFilters();
 
@@ -525,25 +510,25 @@ async function loadTopProducts(movements, products) {
   const sales = movements.filter(m => m.type === 'venta');
 
   sales.forEach(sale => {
-    if (sale.productId && sale.productName) {
-      // Usar el nombre del producto como clave para agrupar
-      const productKey = sale.productName.toLowerCase().trim();
+    if (sale.productId) {
+      // Usar el ID del producto como clave única para agrupar
+      const productKey = sale.productId;
 
       if (!salesByProduct[productKey]) {
-        // Buscar el producto completo para obtener imagen
-        const fullProduct = products.find(p =>
-          p.id === sale.productId ||
-          p.name?.toLowerCase().trim() === productKey
-        );
+        // Buscar el producto actual en la lista de productos para obtener nombre e imagen actualizados
+        const currentProduct = products.find(p => p.id === sale.productId);
+
         salesByProduct[productKey] = {
           productId: sale.productId,
-          productName: sale.productName || fullProduct?.name || 'Producto desconocido',
-          image: sale.productImage || fullProduct?.image || '',
+          // Priorizar el nombre actual del producto, si no existe usar el del movimiento
+          productName: currentProduct?.name || sale.productName || 'Producto desconocido',
+          image: currentProduct?.image || sale.productImage || '',
           quantity: 0,
           total: 0
         };
       }
-      // Sumar cantidades y totales del mismo producto
+
+      // Sumar cantidades y totales
       salesByProduct[productKey].quantity += Math.abs(sale.quantity || 0);
       salesByProduct[productKey].total += Math.abs(sale.total || 0);
     }
@@ -552,7 +537,7 @@ async function loadTopProducts(movements, products) {
   // Ordenar por cantidad vendida
   const topProducts = Object.values(salesByProduct)
     .sort((a, b) => b.quantity - a.quantity)
-    .slice(0, 5);
+    .slice(0, 4);
 
   if (topProducts.length === 0) {
     listContainer.innerHTML = `

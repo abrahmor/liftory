@@ -7,30 +7,50 @@ const routes = {
   '/finance': '/views/finance.html'
 };
 
-// Normalizar ruta
+// Normalizar ruta (ahora manejando hash)
 function normalizePath(path) {
-  if (!path || path === '/' || path === '') {
+  // Si la ruta viene vacía o es raíz
+  if (!path || path === '/' || path === '' || path === '#/') {
     return '/dashboard';
   }
-  // Asegurar que la ruta empiece con /
+
+  // Si empieza con #, quitarlo
+  if (path.startsWith('#')) {
+    path = path.substring(1);
+  }
+
+  // Asegurar que empiece con /
   if (!path.startsWith('/')) {
     path = '/' + path;
   }
+
   return path;
 }
 
 function updateActiveNav(path) {
-  // Remover active de todos los elementos de navegación
-  const allNavItems = document.querySelectorAll('.nav-item, .mobile-nav-item');
-  allNavItems.forEach(item => item.classList.remove('active'));
-  
-  // Agregar active al elemento correspondiente a la ruta actual
+  // Normalizar para comparación
   const normalizedPath = normalizePath(path);
-  const activeNavItems = document.querySelectorAll(`[href="${normalizedPath}"]`);
-  activeNavItems.forEach(item => item.classList.add('active'));
+
+  const allNavItems = document.querySelectorAll('.nav-item, .mobile-nav-item');
+  allNavItems.forEach(item => {
+    item.classList.remove('active');
+
+    // Comparar href. Ahora href podría ser "#/dashboard" o "/dashboard"
+    const href = item.getAttribute('href');
+    if (href) {
+      // Normalizar href del elemento para comparar
+      const itemPath = normalizePath(href);
+      if (itemPath === normalizedPath) {
+        item.classList.add('active');
+      }
+    }
+  });
 }
 
-async function loadRoute(path){
+// ... loadRoute function stays mostly same, but we don't need replaceState for hash
+// except maybe to fix malformed hashes.
+
+async function loadRoute(path) {
   const main = document.getElementById('app-content');
   if (!main) {
     console.error('No se encontró el elemento app-content');
@@ -40,50 +60,51 @@ async function loadRoute(path){
   // Normalizar la ruta
   const normalizedPath = normalizePath(path);
   const url = routes[normalizedPath] || routes['/dashboard'];
-  
+
   try {
     const res = await fetch(url);
-    
+
     if (!res.ok) {
       throw new Error(`HTTP error! status: ${res.status}`);
     }
-    
+
     const html = await res.text();
-    
+
     if (!html || html.trim().length === 0) {
       throw new Error('El archivo está vacío');
     }
-    
+
     main.innerHTML = html;
-    
-    // Mostrar loader general mientras se carga la vista
-    const loaderHTML = `
-      <div class="loader-wrapper" id="view-loader" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1000; pointer-events: none;">
-        <svg class="loader-svg" viewBox="25 25 50 50">
-          <circle class="loader-circle" cx="50" cy="50" r="20"></circle>
-        </svg>
-      </div>
-    `;
-    document.body.insertAdjacentHTML('beforeend', loaderHTML);
-    
+
+    // Mostrar loader general solo si NO es una de las rutas excluidas
+    const noLoaderRoutes = ['/dashboard', '/reports', '/finance'];
+    if (!noLoaderRoutes.includes(normalizedPath)) {
+      const loaderHTML = `
+        <div class="loader-wrapper" id="view-loader" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1000; pointer-events: none;">
+            <svg class="loader-svg" viewBox="25 25 50 50">
+            <circle class="loader-circle" cx="50" cy="50" r="20"></circle>
+            </svg>
+        </div>
+        `;
+      document.body.insertAdjacentHTML('beforeend', loaderHTML);
+    }
+
     // Actualizar estado activo de la navegación
     updateActiveNav(normalizedPath);
-    
-    // Actualizar la URL en el historial si es necesario
-    if (path !== normalizedPath) {
-      history.replaceState({}, '', normalizedPath);
-    }
-    
+
+    // No necesitamos history.replaceState manual con hash routing, 
+    // el navegador lo maneja, pero si normalizamos algo podemos ajustarlo.
+
     // intenta inicializar el script de la vista
     const scriptMap = {
-      '/views/dashboard.html':'/js/views/dashboard.js',
-      '/views/products.html':'/js/views/products.js',
-      '/views/movements.html':'/js/views/movements.js',
-      '/views/reports.html':'/js/views/reports.js',
-      '/views/finance.html':'/js/views/finance.js'
+      '/views/dashboard.html': '/js/views/dashboard.js',
+      '/views/products.html': '/js/views/products.js',
+      '/views/movements.html': '/js/views/movements.js',
+      '/views/reports.html': '/js/views/reports.js',
+      '/views/finance.html': '/js/views/finance.js'
     };
     const s = scriptMap[url];
-    if(s){
+    if (s) {
       try {
         const module = await import(s);
         await module.init?.();
@@ -108,7 +129,7 @@ async function loadRoute(path){
     }
   } catch (error) {
     console.error(`Error al cargar la ruta ${normalizedPath}:`, error);
-    
+
     // Mostrar mensaje de error amigable
     main.innerHTML = `
       <div style="padding: 40px; text-align: center; color: #fff;">
@@ -117,7 +138,7 @@ async function loadRoute(path){
         <p style="color: rgba(255,255,255,0.6); font-size: 0.9rem; margin-top: 16px;">
           ${error.message}
         </p>
-        <button onclick="window.location.href='/app.html#/dashboard'" style="
+        <button onclick="window.location.hash='#/dashboard'" style="
           margin-top: 24px;
           padding: 12px 24px;
           background: #fff;
@@ -129,73 +150,65 @@ async function loadRoute(path){
         ">Volver al Dashboard</button>
       </div>
     `;
-    
-    // Intentar redirigir al dashboard si hay un error
-    if (normalizedPath !== '/dashboard') {
-      setTimeout(() => {
-        history.replaceState({}, '', '/dashboard');
-        loadRoute('/dashboard');
-      }, 2000);
-    }
   }
 }
 
-window.addEventListener('popstate', () => {
-  loadRoute(location.pathname);
+// Escuchar cambios en el hash
+window.addEventListener('hashchange', () => {
+  loadRoute(location.hash);
 });
 
+// Manejar clicks en enlaces para usabilidad, aunque el hash lo hace nativo
 document.addEventListener('click', e => {
   const a = e.target.closest('[data-link]');
-  if(a){
+  if (a) {
     e.preventDefault();
     const href = a.getAttribute('href');
-    history.pushState({}, '', href);
-    loadRoute(href);
-  } 
+    // href podría ser ya "/dashboard" o "#/dashboard"
+    // Lo convertimos a hash si no lo tiene
+
+    let targetHash = href;
+    if (!href.startsWith('#')) {
+      targetHash = '#' + href;
+    }
+
+    // If clicking the same link, force re-render (soft reload)
+    // This updates the body content without a full page refresh
+    if (window.location.hash === targetHash) {
+      loadRoute(targetHash);
+      return;
+    }
+
+    window.location.hash = targetHash;
+    // loadRoute se dispara por hashchange
+  }
 });
 
 // Verificar si estamos en app.html antes de cargar rutas
 function isAppPage() {
-  // Verificar si existe el elemento app-content (solo existe en app.html)
   return document.getElementById('app-content') !== null;
 }
 
-// Carga inicial - esperar a que el DOM esté listo
+// Carga inicial
 function initializeRouter() {
-  // Si no estamos en app.html, redirigir
-  if (!isAppPage()) {
-    // Si estamos en una ruta de la app pero no en app.html, redirigir
-    const currentPath = location.pathname;
-    if (routes[currentPath] || currentPath.startsWith('/dashboard') || 
-        currentPath.startsWith('/products') || currentPath.startsWith('/movements') ||
-        currentPath.startsWith('/reports') || currentPath.startsWith('/finance')) {
-      // Redirigir a app.html con la ruta como hash
-      window.location.href = `/app.html${currentPath}`;
-      return;
-    }
-    return;
+  if (!isAppPage()) return;
+
+  // Cargar ruta basada en el hash actual
+  let path = location.hash;
+
+  if (!path || path === '#/' || path === '') {
+    // Si no hay hash, ir a dashboard por defecto
+    path = '#/dashboard';
+    // Esto disparará hashchange? No si solo ponemos el hash sin evento o replace.
+    // Mejor llamamos loadRoute directamente si no cambiamos el hash
+    history.replaceState(null, null, '#/dashboard');
   }
 
-  // Estamos en app.html, cargar la ruta
-  // Primero verificar si hay un hash en la URL
-  let path = location.hash ? location.hash.substring(1) : location.pathname;
-  
-  // Si no hay ruta válida, usar dashboard por defecto
-  if (!path || path === '/' || path === '') {
-    path = '/dashboard';
-  }
-  
-  // Si la ruta no está en las rutas definidas, usar dashboard
-  if (!routes[path]) {
-    path = '/dashboard';
-  }
-  
   loadRoute(path);
 }
 
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', initializeRouter);
 } else {
-  // DOM ya está listo
   initializeRouter();
 }

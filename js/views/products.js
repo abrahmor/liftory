@@ -3,6 +3,8 @@
 import { getAllProducts, createProduct, updateProduct, deleteProduct, subscribeToProducts } from '/js/services/products.service.js';
 import { getAllMovements, createMovement } from '/js/services/movements.service.js';
 import { setButtonLoading } from '/js/utils/loader.js';
+import { waitForAuth } from '/js/auth.js';
+import { showToast } from '/js/utils/toast.js';
 
 let products = []; // Initialize empty array
 let currentEditId = null;
@@ -20,9 +22,17 @@ async function loadProducts() {
 }
 
 export async function init() {
+    // Wait for auth to be ready
+    const user = await waitForAuth();
+    if (!user) {
+        console.log('User not authenticated, redirecting...');
+        window.location.hash = '#/';
+        return;
+    }
+
     // Load products from Firestore first
     await loadProducts();
-    
+
     // Bind UI elements first (needed for updateCategoryFilter)
     const openBtn = document.getElementById('btn-open-product-modal');
     const modal = document.getElementById('product-modal');
@@ -36,11 +46,11 @@ export async function init() {
     const productsPrevBtn = document.getElementById('products-prev-btn');
     const productsNextBtn = document.getElementById('products-next-btn');
     const productsPageInfo = document.getElementById('products-page-info');
-    
+
     // Pagination state
     let currentProductsPage = 1;
     const productsPerPage = 24; // Good for grid layout (6x4 or 4x6)
-    
+
     // Stock calculation cache
     const stockCache = new Map();
     let movementsCache = null;
@@ -50,7 +60,7 @@ export async function init() {
     // Function to update category filter with unique categories from products
     function updateCategoryFilter() {
         if (!categoryFilter) return;
-        
+
         // Get unique categories from products
         const categories = new Set();
         products.forEach(product => {
@@ -58,16 +68,16 @@ export async function init() {
                 categories.add(product.category.trim());
             }
         });
-        
+
         // Sort categories alphabetically
         const sortedCategories = Array.from(categories).sort();
-        
+
         // Get current selected value
         const currentValue = categoryFilter.value;
-        
+
         // Clear existing options except the first one
         categoryFilter.innerHTML = '<option value="">Categorías</option>';
-        
+
         // Add category options
         sortedCategories.forEach(category => {
             const option = document.createElement('option');
@@ -75,7 +85,7 @@ export async function init() {
             option.textContent = category;
             categoryFilter.appendChild(option);
         });
-        
+
         // Restore selected value if it still exists
         if (currentValue && sortedCategories.includes(currentValue)) {
             categoryFilter.value = currentValue;
@@ -84,7 +94,7 @@ export async function init() {
 
     // Update category filter with existing categories (after categoryFilter is declared)
     updateCategoryFilter();
-    
+
     // Subscribe to real-time updates
     unsubscribeProducts = subscribeToProducts((updatedProducts) => {
         products = updatedProducts;
@@ -96,39 +106,39 @@ export async function init() {
         console.error('Button btn-open-product-modal not found');
         return;
     }
-    
+
     if (!modal) {
         console.error('Modal product-modal not found');
         return;
     }
-    
+
     if (!form) {
         console.error('Form product-form not found');
         return;
     }
 
     // Open modal
-    openBtn.addEventListener('click', function(event) {
+    openBtn.addEventListener('click', function (event) {
         event.preventDefault();
         event.stopPropagation();
-        
+
         // Set origin element for transition
         this.setAttribute('origin-element', '');
-        
+
         // Try to use toggleDialog if available, otherwise open directly
         if (window.toggleDialog && typeof window.toggleDialog === 'function') {
             try {
                 // Store the button as currentTarget in a way toggleDialog can access
                 const button = this;
                 const originalEvent = window.event;
-                
+
                 // Create a synthetic event object
                 window.event = {
                     currentTarget: button
                 };
-                
+
                 window.toggleDialog('product-modal');
-                
+
                 // Restore original event if it existed
                 if (originalEvent) {
                     window.event = originalEvent;
@@ -152,10 +162,10 @@ export async function init() {
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
         console.log('Form submitted');
-        
+
         const submitBtn = form.querySelector('button[type="submit"]');
         setButtonLoading(submitBtn, true);
-        
+
         const data = new FormData(form);
         const product = {
             name: data.get('name')?.toString().trim() || '',
@@ -167,7 +177,7 @@ export async function init() {
             minStock: Number(data.get('minStock')) || 0,
             image: data.get('image')?.toString().trim() || '',
         };
-        
+
         // Validate numeric values
         if (isNaN(product.purchasePrice)) product.purchasePrice = 0;
         if (isNaN(product.salePrice)) product.salePrice = 0;
@@ -175,10 +185,11 @@ export async function init() {
         if (isNaN(product.minStock)) product.minStock = 0;
 
         console.log('Product created:', product);
-        
+
         try {
             await createProduct(product);
             console.log('Product saved to Firestore');
+            showToast('Producto creado correctamente', 'success');
             form.reset();
             setButtonLoading(submitBtn, false);
             // Update category filter after creating product
@@ -186,23 +197,23 @@ export async function init() {
         } catch (error) {
             console.error('Error saving product:', error);
             setButtonLoading(submitBtn, false);
-            alert('Error al guardar el producto. Por favor, intenta de nuevo.');
+            showToast('Error al guardar el producto: ' + error.message, 'error');
             return;
         }
-        
+
         // Close with transition
         const originElement = document.querySelector('[origin-element]');
         if (originElement && window.toggleDialog) {
             const viewTransitionClassClosing = "vt-element-animation-closing";
             const dialog = document.querySelector('dialog[open]');
-            
+
             if (dialog && originElement) {
                 dialog.style.viewTransitionName = "vt-shared";
                 dialog.style.viewTransitionClass = viewTransitionClassClosing;
-                
+
                 originElement.style.viewTransitionName = "vt-shared";
                 originElement.style.viewTransitionClass = viewTransitionClassClosing;
-                
+
                 const viewTransition = document.startViewTransition(() => {
                     dialog.close();
                     originElement.style.viewTransitionName = "";
@@ -211,7 +222,7 @@ export async function init() {
                     dialog.style.viewTransitionClass = "";
                     document.body.style.overflow = "";
                 });
-                
+
                 viewTransition.finished.then(() => {
                     originElement.removeAttribute('origin-element');
                 });
@@ -230,11 +241,11 @@ export async function init() {
         e.preventDefault();
         const submitBtn = editForm.querySelector('button[type="submit"]');
         setButtonLoading(submitBtn, true);
-        
+
         const data = new FormData(editForm);
         const oldProduct = products.find(p => p.id === currentEditId);
         const newInitialStock = Number(data.get('initialStock') || 0);
-        
+
         const updatedProduct = {
             name: data.get('name')?.toString().trim() || '',
             code: data.get('code')?.toString().trim() || '',
@@ -275,7 +286,7 @@ export async function init() {
                     // Use purchase price (costo) for automatic ajuste
                     const ajustePrice = oldProduct.purchasePrice || 0;
                     const ajusteTotal = difference * ajustePrice; // Can be positive or negative
-                    
+
                     const ajusteMovement = {
                         type: 'ajuste',
                         date: new Date(),
@@ -289,11 +300,11 @@ export async function init() {
                         notes: 'Ajuste automático por edición de stock',
                     };
                     await createMovement(ajusteMovement);
-                    
+
                     // Clear caches
                     movementsCache = null;
                     stockCache.clear();
-                    
+
                     // Dispatch custom event to notify movements view
                     window.dispatchEvent(new CustomEvent('movementsUpdated'));
                 }
@@ -303,11 +314,18 @@ export async function init() {
                 updatedProduct.initialStock = oldProduct.initialStock;
                 await updateProduct(currentEditId, updatedProduct);
                 console.log('Product updated in Firestore');
+                showToast('Producto actualizado correctamente', 'success');
                 // Update category filter after updating product
                 updateCategoryFilter();
+                setButtonLoading(submitBtn, false);
+                toggleDialog('edit-product-modal');
+                loadProducts(); // Reload list
+                currentEditId = null;
             } catch (error) {
                 console.error('Error updating product:', error);
-                alert('Error al actualizar el producto. Por favor, intenta de nuevo.');
+                showToast('Error al actualizar el producto: ' + error.message, 'error');
+                setButtonLoading(submitBtn, false);
+                return;
             }
         }
 
@@ -372,18 +390,21 @@ export async function init() {
         if (currentEditId) {
             const deleteBtn = document.getElementById('btn-confirm-delete');
             setButtonLoading(deleteBtn, true);
-            
+
             try {
                 await deleteProduct(currentEditId);
                 console.log('Product deleted from Firestore');
+                showToast('Producto eliminado correctamente', 'success');
                 currentEditId = null;
                 setButtonLoading(deleteBtn, false);
                 // Update category filter after deleting product
                 updateCategoryFilter();
+                toggleDialog('delete-confirmation-modal');
+                loadProducts(); // Reload list
             } catch (error) {
                 console.error('Error deleting product:', error);
                 setButtonLoading(deleteBtn, false);
-                alert('Error al eliminar el producto. Por favor, intenta de nuevo.');
+                showToast('Error al eliminar el producto: ' + error.message, 'error');
             }
         }
 
@@ -656,7 +677,7 @@ export async function init() {
 
     async function renderProducts() {
         console.log('renderProducts called, products count:', products.length);
-        
+
         if (!productsList) {
             console.error('productsList not found');
             return;
@@ -685,7 +706,7 @@ export async function init() {
             if (stockCache.has(product.id)) {
                 return stockCache.get(product.id);
             }
-            
+
             let currentStock = Number(product.initialStock) || 0;
             movements.forEach(movement => {
                 if (movement.productId === product.id) {
@@ -699,12 +720,12 @@ export async function init() {
                 }
             });
             currentStock = Math.max(0, currentStock);
-            
+
             // Cache the result
             stockCache.set(product.id, currentStock);
             return currentStock;
         }
-        
+
         // Clear cache when movements might have changed
         stockCache.clear();
 
@@ -763,22 +784,22 @@ export async function init() {
                 // Last resort: use ID as timestamp (if it's a timestamp-based ID)
                 return Number(product.id) || 0;
             };
-            
+
             const timeA = getTimestamp(a);
             const timeB = getTimestamp(b);
             return timeB - timeA; // Descending order (newest first)
         });
 
         console.log('Filtered products count:', filteredProducts.length);
-        
+
         const totalItems = filteredProducts.length;
         const totalPages = Math.ceil(totalItems / productsPerPage);
-        
+
         // Reset to page 1 if current page is out of bounds
         if (currentProductsPage > totalPages && totalPages > 0) {
             currentProductsPage = 1;
         }
-        
+
         if (filteredProducts.length === 0) {
             productsList.innerHTML = `
                 <div style="text-align: center; padding: 40px; color: rgba(255, 255, 255, 0.5);">
@@ -801,15 +822,15 @@ export async function init() {
             productsPagination.style.alignItems = 'center';
             productsPagination.style.gap = '10px';
             productsPagination.style.marginTop = '20px';
-            
+
             if (productsPageInfo) {
                 productsPageInfo.textContent = `Página ${currentProductsPage} de ${totalPages} (${totalItems} productos)`;
             }
-            
+
             if (productsPrevBtn) {
                 productsPrevBtn.disabled = currentProductsPage === 1;
             }
-            
+
             if (productsNextBtn) {
                 productsNextBtn.disabled = currentProductsPage === totalPages;
             }
@@ -823,7 +844,7 @@ export async function init() {
             const salePrice = Number(product.salePrice) || 0;
             const currentStock = getCurrentStock(product); // Uses optimized cache
             const minStock = Number(product.minStock) || 0;
-            
+
             return `
       <div class="product-card" data-product-id="${product.id}" style="animation-delay: ${index * 0.05}s;">
         <div class="product-thumb">
@@ -842,14 +863,14 @@ export async function init() {
       </div>
     `;
         }).join('');
-    
-    console.log('Products rendered successfully');
+
+        console.log('Products rendered successfully');
     }
-    
+
     // Scanner icon in add product modal
     const addModalScanIcon = document.querySelector('#product-modal .modal-scan-icon');
     const addCodeInput = document.getElementById('code');
-    
+
     if (addModalScanIcon && addCodeInput) {
         addModalScanIcon.addEventListener('click', () => {
             if (window.openScanner) {
@@ -857,11 +878,11 @@ export async function init() {
             }
         });
     }
-    
+
     // Scanner icon in edit product modal
     const editModalScanIcon = document.querySelector('#edit-product-modal .modal-scan-icon');
     const editCodeInput = document.getElementById('edit-code');
-    
+
     if (editModalScanIcon && editCodeInput) {
         editModalScanIcon.addEventListener('click', () => {
             if (window.openScanner) {
@@ -869,7 +890,7 @@ export async function init() {
             }
         });
     }
-    
+
     // Listen for movements updates to clear cache
     window.addEventListener('movementsUpdated', () => {
         movementsCache = null;

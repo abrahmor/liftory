@@ -3,7 +3,7 @@
 }
 
 .dasboard-header {
-  margin-bottom: 32px;
+  margin-bottom: 30px;
 }
 
 .dasboard-title {
@@ -36,8 +36,6 @@
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 24px;
   padding: 24px;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -129,8 +127,6 @@
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 24px;
   padding: 24px;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
   min-height: 300px;
 }
 
@@ -174,9 +170,5 @@
     display: grid;
     grid-template-columns: 1fr;
     gap: 24px;
-  }
-
-  .panel {
-    padding: 16px;
   }
 }

@@ -163,16 +163,16 @@ body {
 .hero .logo {
   background: linear-gradient(rgb(0, 0, 0), rgb(40, 40, 43));
   border-radius: 16px;
-  padding: 5px 9px;
+  padding: 7px 8px;
   margin-bottom: 2rem;
   opacity: 0;
   transform: translateY(20px);
   animation: fadeInUp 0.6s ease-out 0.1s forwards,
-             float 3s ease-in-out 0.7s infinite;
+    float 5s ease-in-out 0.7s infinite;
 }
 
 .hero .logo img {
-  height: 3.5rem;
+  height: 3.1rem;
   width: auto;
   display: block;
 }
@@ -226,6 +226,7 @@ body {
 
 .hero-btn {
   background: #fff;
+  color: #000;
   border: none;
   padding: 16px 24px;
   border-radius: 100px;
@@ -243,6 +244,7 @@ body {
     opacity: 0;
     transform: translateY(20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -757,15 +759,16 @@ dialog::backdrop {
 
 dialog {
   position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  inset: 0;
+  margin: auto;
   border-radius: 18px;
   width: 95%;
   max-width: 420px;
   padding: 3.5rem 2.5rem;
   border: 1px solid #35353b;
   background-color: #000;
+  height: fit-content;
+  /* Ensure it doesn't stretch */
 }
 
 .close-modal {
@@ -862,41 +865,6 @@ dialog {
   color: #ccc;
 }
 
-.checkbox-custom {
-  appearance: none;
-  width: 22px;
-  height: 22px;
-  border: 1.8px solid #3b3b3b;
-  background: transparent;
-  border-radius: 4px;
-  cursor: pointer;
-  display: grid;
-  place-content: center;
-  transition: all .2s ease;
-}
-
-.checkbox-custom::before {
-  content: "";
-  width: 18px;
-  height: 18px;
-  opacity: 0;
-  transform: scale(0.5);
-  transition: .2s ease;
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' fill='black' viewBox='0 0 20 20'><path d='M7.4 14.3l-3.7-3.7 1.4-1.4 2.3 2.3 7-7 1.4 1.4-8.4 8.4z'/></svg>");
-  background-position: center;
-  background-repeat: no-repeat;
-}
-
-.checkbox-custom:checked {
-  background: white;
-  border-color: white;
-}
-
-.checkbox-custom:checked::before {
-  opacity: 1;
-  transform: scale(1);
-}
-
 .form-link {
   color: #ddd;
   font-size: .9rem;
@@ -909,65 +877,18 @@ dialog {
 
 .terms {
   display: grid;
-  grid-template-columns: 18px 1fr;
-  align-items: start;
-  gap: 10px;
-  line-height: 1.35;
-  color: #ccc;
-}
-
-.terms input[type="checkbox"] {
-  appearance: none;
-  width: 18px;
-  height: 18px;
-  border: 1.8px solid #3b3b3b;
-  border-radius: 4px;
-  background: transparent;
-  cursor: pointer;
-  display: grid;
-  place-content: center;
-  transition: all .2s ease;
-  margin-top: 6px;
-}
-
-.terms input[type="checkbox"]::before {
-  content: "";
-  width: 19px;
-  height: 19px;
-  opacity: 0;
-  transform: scale(0.5);
-  transition: .2s ease;
-  background: center/contain no-repeat url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' fill='black' viewBox='0 0 20 20'><path d='M7.4 14.3l-3.7-3.7 1.4-1.4 2.3 2.3 7-7 1.4 1.4-8.4 8.4z'/></svg>");
-}
-
-.terms input[type="checkbox"]:checked {
-  background: #fff;
-  border-color: #fff;
-}
-
-.terms input[type="checkbox"]:checked::before {
-  opacity: 1;
-  transform: scale(1);
-}
-
-.terms input[type="checkbox"]:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(255, 255, 255, .15);
+  grid-template-columns: 20px 1fr;
+  align-items: center;
+  gap: 6px;
 }
 
 .terms span {
-  font-size: 0.80rem;
+  font-size: .90rem;
   color: #ccc;
-  text-wrap: pretty;
 }
 
 .terms a {
   color: #fff;
-  text-decoration: none;
-}
-
-.terms a:hover {
-  text-decoration: underline;
 }
 
 .eye-icon {
@@ -1006,6 +927,107 @@ dialog {
   accent-color: #fff;
   width: 1.2em;
   height: 1.2em;
+}
+
+.ui-checkbox {
+  --primary-color: #ffffff;
+  --secondary-color: #000000;
+  --primary-hover-color: #3b3b3b;
+  /* checkbox */
+  --checkbox-diameter: 16px;
+  --checkbox-border-radius: 5px;
+  --checkbox-border-color: #3b3b3b;
+  --checkbox-border-width: 1px;
+  --checkbox-border-style: solid;
+  /* checkmark */
+  --checkmark-size: 1;
+}
+
+.ui-checkbox,
+.ui-checkbox *,
+.ui-checkbox *::before,
+.ui-checkbox *::after {
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+}
+
+.ui-checkbox {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  width: var(--checkbox-diameter);
+  height: var(--checkbox-diameter);
+  border-radius: var(--checkbox-border-radius);
+  background: var(--secondary-color);
+  border: var(--checkbox-border-width) var(--checkbox-border-style) var(--checkbox-border-color);
+  -webkit-transition: all 0.3s;
+  -o-transition: all 0.3s;
+  transition: all 0.3s;
+  cursor: pointer;
+  position: relative;
+}
+
+.ui-checkbox::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  -webkit-box-shadow: 0 0 0 calc(var(--checkbox-diameter) / 2.5) var(--primary-color);
+  box-shadow: 0 0 0 calc(var(--checkbox-diameter) / 2.5) var(--primary-color);
+  border-radius: inherit;
+  opacity: 0;
+  -webkit-transition: all 0.5s cubic-bezier(0.12, 0.4, 0.29, 1.46);
+  -o-transition: all 0.5s cubic-bezier(0.12, 0.4, 0.29, 1.46);
+  transition: all 0.5s cubic-bezier(0.12, 0.4, 0.29, 1.46);
+}
+
+.ui-checkbox::before {
+  top: 40%;
+  left: 50%;
+  content: "";
+  position: absolute;
+  width: 4px;
+  height: 7px;
+  border-right: 2px solid var(--secondary-color);
+  border-bottom: 2px solid var(--secondary-color);
+  -webkit-transform: translate(-50%, -50%) rotate(45deg) scale(0);
+  -ms-transform: translate(-50%, -50%) rotate(45deg) scale(0);
+  transform: translate(-50%, -50%) rotate(45deg) scale(0);
+  opacity: 0;
+  -webkit-transition: all 0.1s cubic-bezier(0.71, -0.46, 0.88, 0.6), opacity 0.1s;
+  -o-transition: all 0.1s cubic-bezier(0.71, -0.46, 0.88, 0.6), opacity 0.1s;
+  transition: all 0.1s cubic-bezier(0.71, -0.46, 0.88, 0.6), opacity 0.1s;
+}
+
+/* actions */
+.ui-checkbox:hover {
+  border-color: var(--primary-color);
+}
+
+.ui-checkbox:checked {
+  background: var(--primary-color);
+  border-color: transparent;
+}
+
+.ui-checkbox:checked::before {
+  opacity: 1;
+  -webkit-transform: translate(-50%, -50%) rotate(45deg) scale(var(--checkmark-size));
+  -ms-transform: translate(-50%, -50%) rotate(45deg) scale(var(--checkmark-size));
+  transform: translate(-50%, -50%) rotate(45deg) scale(var(--checkmark-size));
+  -webkit-transition: all 0.2s cubic-bezier(0.12, 0.4, 0.29, 1.46) 0.1s;
+  -o-transition: all 0.2s cubic-bezier(0.12, 0.4, 0.29, 1.46) 0.1s;
+  transition: all 0.2s cubic-bezier(0.12, 0.4, 0.29, 1.46) 0.1s;
+}
+
+.ui-checkbox:active:not(:checked)::after {
+  -webkit-transition: none;
+  -o-transition: none;
+  -webkit-box-shadow: none;
+  box-shadow: none;
+  transition: none;
+  opacity: 1;
 }
 
 .form-link {

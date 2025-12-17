@@ -1,0 +1,139 @@
+/* Toast Container - Centered at the top */
+.toast-container {
+    position: fixed;
+    /* Default to fixed for body */
+    top: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 2147483647;
+    /* Max z-index */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    pointer-events: none;
+    width: auto;
+    /* Popover reset */
+    background: transparent;
+    border: none;
+    margin: 0;
+    padding: 0;
+}
+
+/* When inside a dialog, we can now use fixed positioning too because we removed the transform from the dialog */
+dialog .toast-container {
+    position: fixed;
+    top: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: auto;
+}
+
+/* Base Toast Style */
+.toast {
+    background: rgba(20, 20, 20, 0.95);
+    color: #fff;
+    padding: 12px 24px;
+    border-radius: 50px;
+    /* Pill shape */
+    font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
+    font-size: 0.95rem;
+    font-weight: 500;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    pointer-events: auto;
+    opacity: 0;
+    transform: translateY(-20px) scale(0.9);
+    animation: toast-enter 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    min-width: 300px;
+    max-width: 90vw;
+    justify-content: center;
+}
+
+/* Toast Icon */
+.toast-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+}
+
+/* Message text */
+.toast-message {
+    line-height: 1.4;
+}
+
+/* Animations */
+@keyframes toast-enter {
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes toast-exit {
+    from {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+
+    to {
+        opacity: 0;
+        transform: translateY(-20px) scale(0.9);
+    }
+}
+
+/* Mobile Styles */
+@media (max-width: 768px) {
+
+    .toast-container,
+    dialog .toast-container {
+        bottom: 32px;
+        width: 100%;
+        pointer-events: none;
+    }
+
+    .toast {
+        min-width: auto;
+        width: auto;
+        max-width: 90vw;
+        font-size: 0.95rem;
+        font-weight: 500;
+        padding: 14px 24px;
+        border-radius: 50px;
+        background: #111;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.1);
+        border: none;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    /* Ensure icons are visible and sized correctly on mobile */
+    .toast-icon svg {
+        width: 22px;
+        height: 22px;
+    }
+}
+
+.toast.exiting {
+    animation: toast-exit 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+/* Optional Icons colors */
+.toast.error .toast-icon {
+    color: #ff4757;
+}
+
+.toast.success .toast-icon {
+    color: #2ed573;
+}
+
+.toast.info .toast-icon {
+    color: #3742fa;
+}

@@ -102,7 +102,7 @@ export function setButtonLoading(button, isLoading) {
         <circle cx="50" cy="50" r="20" class="btn-loader-circle"></circle>
       </svg>
     `;
-    button.innerHTML = loaderSvg + '<span>Cargando...</span>';
+    button.innerHTML = loaderSvg + '<span>Cargando</span>';
   } else {
     button.classList.remove('btn-loading');
     button.disabled = false;

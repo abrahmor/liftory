@@ -159,8 +159,19 @@ function getErrorMessage(error) {
         'auth/invalid-email': 'Correo electrónico inválido',
         'auth/network-request-failed': 'Error de conexión',
         'auth/popup-closed-by-user': 'La ventana fue cerrada',
-        'auth/cancelled-popup-request': 'Solo se puede abrir una ventana a la vez'
+        'auth/cancelled-popup-request': 'Solo se puede abrir una ventana a la vez',
+        'auth/invalid-credential': 'Correo o contraseña incorrectas',
+        'auth/too-many-requests': 'Demasiados intentos fallidos. Intente más tarde.'
     };
     return errorMessages[error.code] || error.message || 'Ocurrió un error';
 }
 
+// Esperar a que la autenticación esté lista
+export function waitForAuth() {
+    return new Promise((resolve) => {
+        const unsubscribe = auth.onAuthStateChanged((user) => {
+            unsubscribe();
+            resolve(user);
+        });
+    });
+}

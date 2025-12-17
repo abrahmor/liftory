@@ -208,6 +208,8 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
+  /* Optimization */
+  contain: layout paint;
 }
 
 .movement-item {
@@ -222,6 +224,8 @@
   opacity: 0;
   transform: translateX(-10px);
   animation: fadeInLeft 0.4s ease-out forwards;
+  /* Optimization */
+  contain: content;
 }
 
 @keyframes fadeInLeft {
@@ -229,6 +233,7 @@
     opacity: 0;
     transform: translateX(-10px);
   }
+
   to {
     opacity: 1;
     transform: translateX(0);

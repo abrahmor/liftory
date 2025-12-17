@@ -3,20 +3,30 @@ import { DateRangePicker } from '/js/utils/dateRangePicker.js';
 import { getAllMovements, createMovement, deleteAllMovements, subscribeToMovements } from '/js/services/movements.service.js';
 import { getAllProducts } from '/js/services/products.service.js';
 import { setButtonLoading } from '/js/utils/loader.js';
+import { waitForAuth } from '/js/auth.js';
+import { showToast } from '/js/utils/toast.js';
 
 let selectedProduct = null;
 let unsubscribeMovements = null;
 
-export function init() {
+export async function init() {
+    // Wait for auth to be ready
+    const user = await waitForAuth();
+    if (!user) {
+        console.log('User not authenticated, redirecting...');
+        window.location.hash = '#/';
+        return;
+    }
+
     // Bind UI elements
     const openBtn = document.getElementById('btn-open-movement-modal');
     const modal = document.getElementById('movement-modal');
     const form = document.getElementById('movement-form');
     const movementsList = document.getElementById('movements-list');
-    
+
     // Mostrar loader mientras se cargan los movimientos
     if (movementsList) {
-      movementsList.innerHTML = `
+        movementsList.innerHTML = `
         <div class="loader-container">
           <svg class="loader-svg" viewBox="25 25 50 50">
             <circle class="loader-circle" cx="50" cy="50" r="20"></circle>
@@ -37,7 +47,7 @@ export function init() {
     const movementsPrevBtn = document.getElementById('movements-prev-btn');
     const movementsNextBtn = document.getElementById('movements-next-btn');
     const movementsPageInfo = document.getElementById('movements-page-info');
-    
+
     // Pagination state
     let currentPage = 1;
     const itemsPerPage = 20;
@@ -46,12 +56,12 @@ export function init() {
         console.error('Required elements not found:', { openBtn, modal, form });
         return;
     }
-    
+
     if (!productSearch || !productSuggestions) {
         console.error('Product search elements not found:', { productSearch, productSuggestions });
         return;
     }
-    
+
     console.log('Movements init - all elements found');
 
     // Set today's date as default (in local timezone)
@@ -61,7 +71,7 @@ export function init() {
 
     // Scanner icon in movement modal
     const movementScanIcon = document.querySelector('#movement-modal .modal-scan-icon');
-    
+
     if (movementScanIcon && productSearch) {
         movementScanIcon.addEventListener('click', () => {
             if (window.openScanner) {
@@ -78,12 +88,12 @@ export function init() {
         selectedProductField.style.display = 'none';
         productSearch.value = '';
         productSuggestions.classList.remove('show');
-        
+
         // Reset quantity field constraints
         const movementType = document.getElementById('movement-type').value;
         const movementQuantityInput = document.getElementById('movement-quantity');
         const quantityHint = document.getElementById('quantity-hint');
-        
+
         if (movementType === 'ajuste') {
             movementQuantityInput.removeAttribute('min');
             movementQuantityInput.setAttribute('placeholder', 'Ej: 10 para aumentar, -5 para reducir');
@@ -140,7 +150,7 @@ export function init() {
     productSearch.addEventListener('input', async (e) => {
         const query = e.target.value.toLowerCase().trim();
         console.log('Product search input:', query);
-        
+
         if (query.length < 2) {
             productSuggestions.classList.remove('show');
             selectedProduct = null;
@@ -150,7 +160,7 @@ export function init() {
 
         const products = await getProducts();
         console.log('Products available for search:', products.length);
-        
+
         if (products.length === 0) {
             console.warn('No products found in Firestore');
             productSuggestions.classList.remove('show');
@@ -160,7 +170,7 @@ export function init() {
         const matches = products.filter(product => {
             const nameMatch = product.name && product.name.toLowerCase().includes(query);
             const codeMatch = product.code && product.code.toLowerCase().includes(query);
-            return nameMatch || codeMatch;  
+            return nameMatch || codeMatch;
         }).slice(0, 5);
 
         console.log('Matches found:', matches.length);
@@ -181,7 +191,7 @@ export function init() {
                 </div>
             `;
             }));
-            
+
             productSuggestions.innerHTML = suggestionsHTML.join('');
 
             productSuggestions.classList.add('show');
@@ -245,10 +255,10 @@ export function init() {
     const movementTypeSelect = document.getElementById('movement-type');
     const movementQuantityInput = document.getElementById('movement-quantity');
     const quantityHint = document.getElementById('quantity-hint');
-    
+
     movementTypeSelect.addEventListener('change', async (e) => {
         const movementType = e.target.value;
-        
+
         if (selectedProduct) {
             const priceInput = document.getElementById('movement-price');
             if (movementType === 'venta') {
@@ -262,7 +272,7 @@ export function init() {
                 // If no type selected yet, use sale price as default
                 priceInput.value = selectedProduct.salePrice || selectedProduct.purchasePrice || '';
             }
-            
+
             // Update stock display
             const currentStock = await calculateCurrentStock(selectedProduct.id);
             const stockElement = selectedProductDisplay.querySelector('.selected-product-stock');
@@ -270,7 +280,7 @@ export function init() {
                 stockElement.textContent = `Stock: ${currentStock}`;
             }
         }
-        
+
         // Update quantity field constraints for ajuste
         if (movementType === 'ajuste') {
             movementQuantityInput.removeAttribute('min');
@@ -293,9 +303,9 @@ export function init() {
     // Submit form
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
-        
+
         const submitBtn = form.querySelector('button[type="submit"]');
-        
+
         if (!selectedProduct) {
             alert('Por favor selecciona un producto');
             return;
@@ -342,7 +352,7 @@ export function init() {
         const [year, month, day] = dateInput.split('-').map(Number);
         const now = new Date();
         const movementDate = new Date(year, month - 1, day, now.getHours(), now.getMinutes(), now.getSeconds());
-        
+
         // Calculate total based on movement type
         const price = Number(data.get('price') || 0);
         let total;
@@ -353,7 +363,7 @@ export function init() {
             // For venta and compra: always positive total
             total = Math.abs(quantity) * price;
         }
-        
+
         const movement = {
             type: movementType,
             date: movementDate,
@@ -370,6 +380,7 @@ export function init() {
         try {
             await createMovement(movement);
             console.log('Movement saved to Firestore');
+            showToast('Movimiento registrado correctamente', 'success');
             setButtonLoading(submitBtn, false);
 
             // Dispatch custom event to notify other views (will clear their caches)
@@ -377,14 +388,14 @@ export function init() {
         } catch (error) {
             console.error('Error saving movement:', error);
             setButtonLoading(submitBtn, false);
-            alert('Error al guardar el movimiento. Por favor, intenta de nuevo.');
+            showToast('Error al guardar el movimiento: ' + error.message, 'error');
             return;
         }
 
         // Note: We don't update initialStock here because we calculate current stock
         // dynamically from initialStock + movements. This keeps the data consistent.
         // The initialStock should remain as the original stock when the product was created.
-        
+
         renderMovements();
         form.reset();
         selectedProduct = null;
@@ -393,20 +404,20 @@ export function init() {
         const todayDate = new Date();
         const todayStr = `${todayDate.getFullYear()}-${String(todayDate.getMonth() + 1).padStart(2, '0')}-${String(todayDate.getDate()).padStart(2, '0')}`;
         document.getElementById('movement-date').value = todayStr;
-        
+
         // Close with transition
         const originElement = document.querySelector('[origin-element]');
         if (originElement) {
             const viewTransitionClassClosing = "vt-element-animation-closing";
             const dialog = document.querySelector('dialog[open]');
-            
+
             if (dialog && originElement) {
                 dialog.style.viewTransitionName = "vt-shared";
                 dialog.style.viewTransitionClass = viewTransitionClassClosing;
-                
+
                 originElement.style.viewTransitionName = "vt-shared";
                 originElement.style.viewTransitionClass = viewTransitionClassClosing;
-                
+
                 const viewTransition = document.startViewTransition(() => {
                     dialog.close();
                     originElement.style.viewTransitionName = "";
@@ -415,7 +426,7 @@ export function init() {
                     dialog.style.viewTransitionClass = "";
                     document.body.style.overflow = "";
                 });
-                
+
                 viewTransition.finished.then(() => {
                     originElement.removeAttribute('origin-element');
                 });
@@ -438,7 +449,7 @@ export function init() {
                     const day = String(date.getDate()).padStart(2, '0');
                     return `${year}-${month}-${day}`;
                 };
-                
+
                 dateFromFilter.value = formatDate(startDate);
                 dateToFilter.value = formatDate(endDate);
                 renderMovements();
@@ -472,16 +483,16 @@ export function init() {
         if (currentPage > 1) {
             currentPage--;
             renderMovements();
-            // Scroll to top of movements list
-            movementsList?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            // Scroll to top of page
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
     });
 
     movementsNextBtn?.addEventListener('click', () => {
         currentPage++;
         renderMovements();
-        // Scroll to top of movements list
-        movementsList?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        // Scroll to top of page
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     });
 
     // Global search state
@@ -491,26 +502,44 @@ export function init() {
     async function renderMovements() {
         if (!movementsList) return;
 
-        // Always get fresh movements from Firestore
+        // Always get fresh movements and products to ensure consistency
         let movements = [];
+        let products = [];
         try {
-            movements = await getAllMovements();
+            [movements, products] = await Promise.all([
+                getAllMovements(),
+                getAllProducts()
+            ]);
         } catch (error) {
-            console.error('Error loading movements:', error);
+            console.error('Error loading data:', error);
         }
 
         const typeFilterValue = typeFilter?.value || '';
         const dateFromValue = dateFromFilter?.value || '';
         const dateToValue = dateToFilter?.value || '';
 
+        // Create a map for quick product lookup
+        const productMap = new Map(products.map(p => [p.id, p]));
+
         let filteredMovements = movements.filter(movement => {
+            // Update movement product name from current catalog if available
+            // This ensures we show the current name even if it was renamed
+            if (movement.productId && productMap.has(movement.productId)) {
+                const currentProduct = productMap.get(movement.productId);
+                movement.displayProductName = currentProduct.name;
+                movement.displayProductCode = currentProduct.code;
+            } else {
+                movement.displayProductName = movement.productName;
+                movement.displayProductCode = movement.productCode;
+            }
+
             const matchesType = !typeFilterValue || movement.type === typeFilterValue;
-            
+
             let matchesDate = true;
             if (dateFromValue || dateToValue) {
                 // Normalize movement date to YYYY-MM-DD format
                 let movementDateObj;
-                
+
                 if (movement.date instanceof Date) {
                     movementDateObj = movement.date;
                 } else if (movement.date && typeof movement.date.toDate === 'function') {
@@ -521,13 +550,13 @@ export function init() {
                 } else {
                     movementDateObj = new Date();
                 }
-                
+
                 // Format to YYYY-MM-DD for comparison
                 const year = movementDateObj.getFullYear();
                 const month = String(movementDateObj.getMonth() + 1).padStart(2, '0');
                 const day = String(movementDateObj.getDate()).padStart(2, '0');
                 const movementDateOnly = `${year}-${month}-${day}`;
-                
+
                 if (dateFromValue) {
                     matchesDate = matchesDate && movementDateOnly >= dateFromValue;
                 }
@@ -540,9 +569,9 @@ export function init() {
             let matchesSearch = true;
             if (globalSearchTerm) {
                 const searchLower = globalSearchTerm.toLowerCase();
-                matchesSearch = 
-                    (movement.productName && movement.productName.toLowerCase().includes(searchLower)) ||
-                    (movement.productCode && movement.productCode.toLowerCase().includes(searchLower)) ||
+                matchesSearch =
+                    (movement.displayProductName && movement.displayProductName.toLowerCase().includes(searchLower)) ||
+                    (movement.displayProductCode && movement.displayProductCode.toLowerCase().includes(searchLower)) ||
                     (movement.notes && movement.notes.toLowerCase().includes(searchLower));
             }
 
@@ -552,7 +581,7 @@ export function init() {
         // Sort by date - newest first
         filteredMovements.sort((a, b) => {
             let dateA, dateB;
-            
+
             // Handle different date formats
             if (a.date instanceof Date) {
                 dateA = a.date.getTime();
@@ -563,7 +592,7 @@ export function init() {
             } else {
                 dateA = 0;
             }
-            
+
             if (b.date instanceof Date) {
                 dateB = b.date.getTime();
             } else if (b.date && b.date.toDate) {
@@ -573,13 +602,13 @@ export function init() {
             } else {
                 dateB = 0;
             }
-            
+
             return dateB - dateA; // Descending order (newest first)
         });
 
         const totalItems = filteredMovements.length;
         const totalPages = Math.ceil(totalItems / itemsPerPage);
-        
+
         // Reset to page 1 if current page is out of bounds
         if (currentPage > totalPages && totalPages > 0) {
             currentPage = 1;
@@ -607,15 +636,15 @@ export function init() {
             movementsPagination.style.alignItems = 'center';
             movementsPagination.style.gap = '10px';
             movementsPagination.style.marginTop = '20px';
-            
+
             if (movementsPageInfo) {
                 movementsPageInfo.textContent = `Página ${currentPage} de ${totalPages} (${totalItems} movimientos)`;
             }
-            
+
             if (movementsPrevBtn) {
                 movementsPrevBtn.disabled = currentPage === 1;
             }
-            
+
             if (movementsNextBtn) {
                 movementsNextBtn.disabled = currentPage === totalPages;
             }
@@ -662,7 +691,7 @@ export function init() {
             } else {
                 movementDate = new Date();
             }
-            
+
             const formattedDate = movementDate.toLocaleDateString('es-ES', {
                 year: 'numeric',
                 month: 'short',
@@ -679,14 +708,14 @@ export function init() {
                 <div class="movement-item" style="animation-delay: ${index * 0.05}s;">
                     <div class="movement-info">
                         <div class="movement-details">
-                            <div class="movement-product">${movement.productName}</div>
+                            <div class="movement-product">${movement.displayProductName || movement.productName}</div>
                             
                             <div class="movement-meta">
                                 <span class="movement-type ${movement.type}">
                                     ${typeIcons[movement.type]}
                                     ${typeLabels[movement.type]}
                                 </span>
-                                <span>Código: ${movement.productCode}</span>
+                                <span>Código: ${movement.displayProductCode || movement.productCode}</span>
                                 <span>Cantidad: ${movement.type === 'ajuste' ? (movement.quantity > 0 ? '+' : '') + movement.quantity : movement.quantity}</span>
                                 <span>Precio: S/${movement.price.toFixed(2)}</span>
                             </div>
@@ -708,7 +737,7 @@ export function init() {
     unsubscribeMovements = subscribeToMovements((updatedMovements) => {
         renderMovements();
     });
-    
+
     // Initial render
     renderMovements();
 
@@ -733,22 +762,22 @@ export function init() {
             const path = window.location.pathname;
             const activeNav = document.querySelector('.nav-item.active, .mobile-nav-item.active');
             const activeView = activeNav?.getAttribute('data-view');
-            
-            return path === '/movements' || 
-                   activeView === 'sales' || 
-                   activeView === 'movements';
+
+            return path === '/movements' ||
+                activeView === 'sales' ||
+                activeView === 'movements';
         };
-        
+
         // Update placeholder based on current view
         const updateSearchPlaceholder = () => {
             if (isMovementsView()) {
-                globalSearchInput.placeholder = 'Buscar';    
+                globalSearchInput.placeholder = 'Buscar';
             }
         };
-        
+
         // Update placeholder on init
         updateSearchPlaceholder();
-        
+
         // Listen for route changes
         window.addEventListener('popstate', updateSearchPlaceholder);
         document.addEventListener('click', (e) => {
@@ -781,7 +810,7 @@ export function init() {
 
     // TEMPORAL: Función para limpiar movimientos (solo para desarrollo/testing)
     // Usar desde la consola: clearAllMovements()
-    window.clearAllMovements = async function() {
+    window.clearAllMovements = async function () {
         if (confirm('¿Estás seguro de que quieres eliminar TODOS los movimientos? Esta acción no se puede deshacer.')) {
             try {
                 await deleteAllMovements();

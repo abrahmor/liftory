@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="/css/movements.css">
     <link rel="stylesheet" href="/css/finance.css">
     <link rel="stylesheet" href="/css/reports.css">
+    <link rel="stylesheet" href="/css/toast.css">
     <link rel="shortcut icon" href="/assets/icons/logo-test.ico" type="image/x-icon">
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css" />
@@ -37,7 +38,7 @@
         </div>
 
         <nav class="sidebar-nav">
-            <a href="/dashboard" class="nav-item active" data-view="dashboard" data-link>
+            <a href="#/dashboard" class="nav-item active" data-view="dashboard" data-link>
                 <div class="nav-icon">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
@@ -51,7 +52,7 @@
                 <span class="nav-text">Dashboard</span>
             </a>
 
-            <a href="/products" class="nav-item" data-view="products" data-link>
+            <a href="#/products" class="nav-item" data-view="products" data-link>
                 <div class="nav-icon">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
@@ -67,7 +68,7 @@
                 <span class="nav-text">Productos</span>
             </a>
 
-            <a href="/movements" class="nav-item" data-view="sales" data-link>
+            <a href="#/movements" class="nav-item" data-view="sales" data-link>
                 <div class="nav-icon">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
@@ -82,7 +83,7 @@
                 <span class="nav-text">Movimientos</span>
             </a>
 
-            <a href="/reports" class="nav-item" data-view="reports" data-link>
+            <a href="#/reports" class="nav-item" data-view="reports" data-link>
                 <div class="nav-icon">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
@@ -100,7 +101,7 @@
                 <span class="nav-text">Reportes</span>
             </a>
 
-            <a href="/finance" class="nav-item" data-view="finance" data-link>
+            <a href="#/finance" class="nav-item" data-view="finance" data-link>
                 <div class="nav-icon">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
@@ -117,7 +118,7 @@
         </nav>
 
         <div class="sidebar-footer">
-            <a href="/upgrade" class="nav-item" data-view="settings" data-link>
+            <a href="#/upgrade" class="nav-item" data-view="settings" data-link>
                 <div class="nav-icon">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
@@ -131,7 +132,7 @@
                 </div>
                 <span class="nav-text">Upgrade Plan</span>
             </a>
-            <a href="/feedback" class="nav-item" data-view="settings" data-link>
+            <a href="#/feedback" class="nav-item" data-view="settings" data-link>
                 <div class="nav-icon">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
@@ -203,7 +204,7 @@
 
     <!-- Mobile Bottom Navigation -->
     <nav class="mobile-nav" id="mobile-nav">
-        <a href="/dashboard" class="mobile-nav-item active" data-view="dashboard" data-link>
+        <a href="#/dashboard" class="mobile-nav-item active" data-view="dashboard" data-link>
             <div class="mobile-nav-icon">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
@@ -217,7 +218,7 @@
             <span class="mobile-nav-text">Dashboard</span>
         </a>
 
-        <a href="/products" class="mobile-nav-item" data-view="products" data-link>
+        <a href="#/products" class="mobile-nav-item" data-view="products" data-link>
             <div class="mobile-nav-icon">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
@@ -233,7 +234,7 @@
             <span class="mobile-nav-text">Productos</span>
         </a>
 
-        <a href="/movements" class="mobile-nav-item" data-view="sales" data-link>
+        <a href="#/movements" class="mobile-nav-item" data-view="sales" data-link>
             <div class="mobile-nav-icon">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
@@ -303,9 +304,12 @@
                     <div class="user-profile-avatar-section">
                         <div class="user-profile-avatar-large">
                             <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRi_Gmlxn_WyoSjYy-Za1adFUdYloIJpVbzBVQQG1Z6zhYyjmt_ND8LMURMPBg8srlu2KQ&usqp=CAU"
-                                alt="User Avatar">
+                                alt="User Avatar" class="user-avatar-img">
                         </div>
-                        <p class="user-profile-name">Abraham</p>
+                        <div class="user-profile-name-section" style="display: flex;">
+                            <p class="user-profile-name">Abraham</p>
+                            <button class="profile-edit-btn"><i class="ti ti-edit"></i></button>
+                        </div>
                     </div>
 
                     <!-- Account Details -->
@@ -318,7 +322,6 @@
                         <div class="profile-detail-card">
                             <div class="profile-detail-label">Nombre de usuario</div>
                             <div class="profile-detail-value">Abraham</div>
-                            <!--<button class="profile-edit-btn">Editar</button>-->
                         </div>
 
                         <div class="">

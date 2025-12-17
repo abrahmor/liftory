@@ -1,72 +1,56 @@
 // dashboard.js - vista
-import { getCurrentUser, getUserData, onAuthStateChanged } from '/js/auth.js';
+import { getCurrentUser, getUserData, onAuthStateChanged, waitForAuth } from '/js/auth.js';
 import { getAllProducts } from '/js/services/products.service.js';
 import { getAllMovements } from '/js/services/movements.service.js';
 
-export async function init(){
+export async function init() {
   console.log('dashboard init');
-  
+
   // Esperar a que el usuario esté autenticado antes de cargar datos
-  const user = getCurrentUser();
+  const user = await waitForAuth();
+
   if (!user) {
-    // Si no hay usuario, esperar a que se autentique
-    return new Promise((resolve) => {
-      const unsubscribe = onAuthStateChanged((authUser) => {
-        if (authUser) {
-          unsubscribe();
-          initializeDashboard();
-          resolve();
-        }
-      });
-    });
+    console.warn('Usuario no autenticado en dashboard init, redirigiendo...');
+    // Opcional: Redirigir si es necesario, aunque dashboard es la página por defecto
+    // window.location.hash = '#/';
+    return;
   }
-  
-  // Si ya hay usuario, inicializar directamente
+
+  // Si ya hay usuario, inicializar
   await initializeDashboard();
 }
 
 async function initializeDashboard() {
-  // Verificar nuevamente que el usuario esté autenticado
-  const user = getCurrentUser();
-  if (!user) {
-    console.warn('Usuario no autenticado, esperando...');
-    // Esperar un poco y reintentar
-    setTimeout(async () => {
-      const retryUser = getCurrentUser();
-      if (retryUser) {
-        await initializeDashboard();
-      }
-    }, 500);
-    return;
-  }
-  
-  // Esperar un momento para asegurar que Firebase está completamente inicializado
-  await new Promise(resolve => setTimeout(resolve, 100));
-  
+  // El usuario ya fue verificado en init() gracias a waitForAuth()
+
   // Actualizar nombre del usuario en el dashboard
   updateDashboardUserName();
-  
+
+  // Actualizar fecha actual
+  updateCurrentDate();
+
+
   // Cargar y mostrar estadísticas
   try {
     await loadAndDisplayStats();
   } catch (error) {
     console.error('Error al cargar estadísticas:', error);
   }
-  
+
   // Cargar información de stock
   try {
     await loadStockInfo();
   } catch (error) {
     console.error('Error al cargar información de stock:', error);
   }
-  
+
   // Cargar productos más vendidos
   try {
     await loadTopProducts();
   } catch (error) {
     console.error('Error al cargar productos más vendidos:', error);
   }
-  
+
   // Cargar movimientos recientes
   try {
     await loadRecentMovements();
@@ -81,17 +65,17 @@ function updateDashboardUserName() {
 
   // Mostrar nombre inmediatamente desde Firebase Auth
   const quickName = user.displayName || user.email?.split('@')[0] || 'Usuario';
-  
+
   const dashboardTitle = document.querySelector('.dasboard-title');
   if (dashboardTitle) {
-    dashboardTitle.textContent = `Bienvenido, ${quickName}`;
+    dashboardTitle.textContent = `Hola, ${quickName}`;
   }
 
   // Luego actualizar desde Firestore en segundo plano si hay un nombre diferente
   getUserData(user.uid).then(userData => {
     if (userData?.displayName && userData.displayName !== quickName) {
       if (dashboardTitle) {
-        dashboardTitle.textContent = `Bienvenido, ${userData.displayName}`;
+        dashboardTitle.textContent = `Hola, ${userData.displayName}`;
       }
     }
   }).catch(err => {
@@ -108,13 +92,13 @@ async function loadAndDisplayStats() {
 
     // Calcular estadísticas
     const stats = calculateStats(products, movements);
-    
+
     // Actualizar las tarjetas de estadísticas
     updateStatCard('Ingresos totales', formatCurrency(stats.totalIncome));
     updateStatCard('Rentabilidad', `${stats.profitMargin.toFixed(1)}%`);
     updateStatCard('Unidades totales del inventario', formatNumber(stats.totalUnits));
     updateStatCard('Valor total del inventario', formatCurrency(stats.totalInventoryValue));
-    
+
   } catch (error) {
     console.error('Error al cargar estadísticas:', error);
     // Mostrar valores por defecto en caso de error
@@ -129,21 +113,21 @@ function calculateStats(products, movements) {
   // Calcular ingresos totales (solo ventas)
   const sales = movements.filter(m => m.type === 'venta');
   const totalIncome = sales.reduce((sum, sale) => sum + (sale.total || 0), 0);
-  
+
   // Calcular costos totales (compras)
   const purchases = movements.filter(m => m.type === 'compra');
   const totalCosts = purchases.reduce((sum, purchase) => sum + (purchase.total || 0), 0);
-  
+
   // Calcular rentabilidad (margen de ganancia)
   const profit = totalIncome - totalCosts;
   const profitMargin = totalIncome > 0 ? (profit / totalIncome) * 100 : 0;
-  
+
   // Calcular unidades totales del inventario
   const totalUnits = products.reduce((sum, product) => {
     const initialStock = Number(product.initialStock) || 0;
     const productMovements = movements.filter(m => m.productId === product.id);
     let currentStock = initialStock;
-    
+
     productMovements.forEach(movement => {
       if (movement.type === 'venta') {
         currentStock -= Math.abs(movement.quantity || 0);
@@ -153,17 +137,17 @@ function calculateStats(products, movements) {
         currentStock += movement.quantity || 0;
       }
     });
-    
+
     return sum + Math.max(0, currentStock);
   }, 0);
-  
+
   // Calcular valor total del inventario (stock actual * precio de compra)
   const totalInventoryValue = products.reduce((sum, product) => {
     const initialStock = Number(product.initialStock) || 0;
     const purchasePrice = Number(product.purchasePrice) || 0;
     const productMovements = movements.filter(m => m.productId === product.id);
     let currentStock = initialStock;
-    
+
     productMovements.forEach(movement => {
       if (movement.type === 'venta') {
         currentStock -= Math.abs(movement.quantity || 0);
@@ -173,10 +157,10 @@ function calculateStats(products, movements) {
         currentStock += movement.quantity || 0;
       }
     });
-    
+
     return sum + (Math.max(0, currentStock) * purchasePrice);
   }, 0);
-  
+
   return {
     totalIncome,
     totalCosts,
@@ -210,19 +194,19 @@ function updateStatCard(label, value) {
 
 async function loadStockInfo() {
   const stockLoader = document.getElementById('stock-loader');
-  
+
   try {
     const [products, movements] = await Promise.all([
       getAllProducts(),
       getAllMovements()
     ]);
-    
+
     // Calcular stock para cada producto
     const productsWithStock = products.map(product => {
       const initialStock = Number(product.initialStock) || 0;
       const minStock = Number(product.minStock) || 0;
       const productMovements = movements.filter(m => m.productId === product.id);
-      
+
       let currentStock = initialStock;
       productMovements.forEach(movement => {
         if (movement.type === 'venta') {
@@ -233,33 +217,33 @@ async function loadStockInfo() {
           currentStock += movement.quantity || 0;
         }
       });
-      
+
       return {
         ...product,
         currentStock: Math.max(0, currentStock),
         minStock
       };
     });
-    
+
     // Filtrar productos por nivel de stock
     const highStock = productsWithStock.filter(p => p.currentStock > p.minStock && p.currentStock > 0);
     const nearLowStock = productsWithStock.filter(p => p.currentStock > 0 && p.currentStock <= p.minStock && p.currentStock > p.minStock * 0.5);
     const lowStock = productsWithStock.filter(p => p.currentStock > 0 && p.currentStock <= p.minStock * 0.5);
     const outOfStock = productsWithStock.filter(p => p.currentStock === 0);
-    
+
     // Combinar "near-low" y "low" para el diseño
     const combinedLowStock = [...nearLowStock, ...lowStock];
-    
+
     // Renderizar información de stock
-    const stockPanel = Array.from(document.querySelectorAll('.panel')).find(p => 
+    const stockPanel = Array.from(document.querySelectorAll('.panel')).find(p =>
       p.querySelector('.panel-title')?.textContent.includes('Informacion de stock')
     );
-    
+
     if (stockPanel) {
       const panelContent = stockPanel.querySelector('.panel-content');
       if (panelContent) {
         const totalProducts = products.length;
-        
+
         // Calcular alturas de barras (proporcionales al máximo)
         // Solo considerar categorías con productos para el cálculo
         const counts = [highStock.length, combinedLowStock.length, outOfStock.length].filter(c => c > 0);
@@ -267,7 +251,7 @@ async function loadStockInfo() {
         const highStockHeight = highStock.length > 0 ? (highStock.length / maxCount) * 100 : 0;
         const lowStockHeight = combinedLowStock.length > 0 ? (combinedLowStock.length / maxCount) * 100 : 0;
         const outOfStockHeight = outOfStock.length > 0 ? (outOfStock.length / maxCount) * 100 : 0;
-        
+
         let html = `
           <div style="padding-top: 20px">
             <!-- Header -->
@@ -313,9 +297,9 @@ async function loadStockInfo() {
             </div>
           </div>
         `;
-        
+
         panelContent.innerHTML = html;
-        
+
         // Animación sutil al mostrar el contenido
         const stockContent = panelContent.querySelector('div');
         if (stockContent) {
@@ -329,7 +313,7 @@ async function loadStockInfo() {
         }
       }
     }
-    
+
     // Ocultar loader
     if (stockLoader) {
       stockLoader.style.opacity = '0';
@@ -342,7 +326,7 @@ async function loadStockInfo() {
     console.error('Error al cargar información de stock:', error);
     if (stockLoader) {
       stockLoader.remove();
-      const stockPanel = Array.from(document.querySelectorAll('.panel')).find(p => 
+      const stockPanel = Array.from(document.querySelectorAll('.panel')).find(p =>
         p.querySelector('.panel-title')?.textContent.includes('Informacion de stock')
       );
       if (stockPanel) {
@@ -357,52 +341,51 @@ async function loadStockInfo() {
 
 async function loadTopProducts() {
   const productsLoader = document.getElementById('products-loader');
-  
+
   try {
     const [products, movements] = await Promise.all([
       getAllProducts(),
       getAllMovements()
     ]);
-    
+
     // Contar ventas por producto (agrupar por nombre para evitar duplicados)
     const salesByProduct = {};
     const sales = movements.filter(m => m.type === 'venta');
-    
+
     sales.forEach(sale => {
-      if (sale.productId && sale.productName) {
-        // Usar el nombre del producto como clave para agrupar
-        const productKey = sale.productName.toLowerCase().trim();
-        
+      if (sale.productId) {
+        // Use productId as key to group sales even if name changed
+        const productKey = sale.productId;
+
         if (!salesByProduct[productKey]) {
-          // Buscar el producto completo para obtener imagen
-          const fullProduct = products.find(p => 
-            p.id === sale.productId || 
-            p.name?.toLowerCase().trim() === productKey
-          );
+          // Find current product details
+          const currentProduct = products.find(p => p.id === sale.productId);
+
           salesByProduct[productKey] = {
             productId: sale.productId,
-            productName: sale.productName || fullProduct?.name || 'Producto desconocido',
-            image: sale.productImage || fullProduct?.image || '',
+            // Use current name if available, fallback to movement name
+            productName: currentProduct?.name || sale.productName || 'Producto desconocido',
+            image: currentProduct?.image || sale.productImage || '',
             quantity: 0,
             total: 0
           };
         }
-        // Sumar cantidades y totales del mismo producto
+
         salesByProduct[productKey].quantity += Math.abs(sale.quantity || 0);
         salesByProduct[productKey].total += Math.abs(sale.total || 0);
       }
     });
-    
+
     // Ordenar por cantidad vendida
     const topProducts = Object.values(salesByProduct)
       .sort((a, b) => b.quantity - a.quantity)
-      .slice(0, 5);
-    
+      .slice(0, 4);
+
     // Renderizar productos más vendidos
-    const topProductsPanel = Array.from(document.querySelectorAll('.panel')).find(p => 
+    const topProductsPanel = Array.from(document.querySelectorAll('.panel')).find(p =>
       p.querySelector('.panel-title')?.textContent.includes('Productos mas vendidos')
     );
-    
+
     if (topProductsPanel) {
       const panelContent = topProductsPanel.querySelector('.panel-content');
       if (panelContent) {
@@ -414,14 +397,14 @@ async function loadTopProducts() {
             html += `<div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; border-radius: 22px; border: 1px solid rgba(255, 255, 255, 0.1); background: #1010128c;">
               <div style="display: flex; align-items: center; gap: 12px;">
                 <div style="width: 48px; height: 48px; border-radius: 8px; overflow: hidden; background: rgba(255, 255, 255, 0.1); flex-shrink: 0; display: flex; align-items: center; justify-content: center;">
-                  ${product.image 
-                    ? `<img src="${product.image}" alt="${product.productName}" style="width: 100%; height: 100%; object-fit: cover;">`
-                    : `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgba(255, 255, 255, 0.3)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                  ${product.image
+                ? `<img src="${product.image}" alt="${product.productName}" style="width: 100%; height: 100%; object-fit: cover;">`
+                : `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgba(255, 255, 255, 0.3)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                         <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
                         <circle cx="8.5" cy="8.5" r="1.5"></circle>
                         <polyline points="21 15 16 10 5 21"></polyline>
                       </svg>`
-                  }
+              }
                 </div>
                 <div>
                   <div style="color: rgba(255, 255, 255, 0.9); font-size: 0.9rem; font-weight: 500;">${product.productName}</div>
@@ -433,7 +416,7 @@ async function loadTopProducts() {
           });
           html += '</div>';
           panelContent.innerHTML = html;
-          
+
           // Animación sutil al mostrar el contenido
           const productsContent = panelContent.querySelector('div');
           if (productsContent) {
@@ -448,7 +431,7 @@ async function loadTopProducts() {
         }
       }
     }
-    
+
     // Ocultar loader
     if (productsLoader) {
       productsLoader.style.opacity = '0';
@@ -461,7 +444,7 @@ async function loadTopProducts() {
     console.error('Error al cargar productos más vendidos:', error);
     if (productsLoader) {
       productsLoader.remove();
-      const topProductsPanel = Array.from(document.querySelectorAll('.panel')).find(p => 
+      const topProductsPanel = Array.from(document.querySelectorAll('.panel')).find(p =>
         p.querySelector('.panel-title')?.textContent.includes('Productos mas vendidos')
       );
       if (topProductsPanel) {
@@ -476,10 +459,10 @@ async function loadTopProducts() {
 
 async function loadRecentMovements() {
   const movementsLoader = document.getElementById('movements-loader');
-  
+
   try {
     const movements = await getAllMovements();
-    
+
     // Obtener los 5 movimientos más recientes
     const recentMovements = movements
       .sort((a, b) => {
@@ -488,25 +471,25 @@ async function loadRecentMovements() {
         return dateB - dateA;
       })
       .slice(0, 5);
-    
+
     // Iconos y etiquetas de tipo (igual que en movements.js)
     const typeIcons = {
       'venta': `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-package-export"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 21l-8 -4.5v-9l8 -4.5l8 4.5v4.5" /><path d="M12 12l8 -4.5" /><path d="M12 12v9" /><path d="M12 12l-8 -4.5" /><path d="M15 18h7" /><path d="M19 15l3 3l-3 3" /></svg>`,
       'compra': `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-package-import"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 21l-8 -4.5v-9l8 -4.5l8 4.5v4.5" /><path d="M12 12l8 -4.5" /><path d="M12 12v9" /><path d="M12 12l-8 -4.5" /><path d="M22 18h-7" /><path d="M18 15l-3 3l3 3" /></svg>`,
       'ajuste': `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-settings"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065z" /><path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0" /></svg>`
     };
-    
+
     const typeLabels = {
       'venta': 'Venta',
       'compra': 'Compra',
       'ajuste': 'Ajuste'
     };
-    
+
     // Renderizar movimientos recientes
-    const movementsPanel = Array.from(document.querySelectorAll('.panel')).find(p => 
+    const movementsPanel = Array.from(document.querySelectorAll('.panel')).find(p =>
       p.querySelector('.panel-title')?.textContent.includes('Movimientos Recientes')
     );
-    
+
     if (movementsPanel) {
       const panelContent = movementsPanel.querySelector('.panel-content');
       if (panelContent) {
@@ -514,7 +497,7 @@ async function loadRecentMovements() {
           panelContent.innerHTML = `<p style="color: rgba(255, 255, 255, 0.5); text-align: center; padding: 20px;">No hay movimientos registrados</p>`;
         } else {
           let html = '<div style="display: flex; flex-direction: column; gap: 12px; padding-top: 20px;">';
-          
+
           recentMovements.forEach(movement => {
             // Parsear fecha (igual que en movements.js)
             let movementDate;
@@ -538,19 +521,19 @@ async function loadRecentMovements() {
             } else {
               movementDate = new Date();
             }
-            
+
             const formattedDate = movementDate.toLocaleDateString('es-ES', {
               year: 'numeric',
               month: 'short',
               day: 'numeric'
             });
-            
+
             const formattedTime = movementDate.toLocaleTimeString('en-US', {
               hour: 'numeric',
               minute: '2-digit',
               hour12: true
             });
-            
+
             html += `
               <div class="movement-item" style="display: flex; justify-content: space-between; align-items: center; padding: 16px; border: 1px solid rgba(255, 255, 255, 0.08); transition: all 0.2s ease;">
                 <div class="movement-info" style="flex: 1;">
@@ -578,10 +561,10 @@ async function loadRecentMovements() {
               </div>
             `;
           });
-          
+
           html += '</div>';
           panelContent.innerHTML = html;
-          
+
           // Animación sutil al mostrar los movimientos
           const movementItems = panelContent.querySelectorAll('.movement-item');
           movementItems.forEach((item, index) => {
@@ -596,7 +579,7 @@ async function loadRecentMovements() {
         }
       }
     }
-    
+
     // Ocultar loader
     if (movementsLoader) {
       movementsLoader.style.opacity = '0';
@@ -609,7 +592,7 @@ async function loadRecentMovements() {
     console.error('Error al cargar movimientos recientes:', error);
     if (movementsLoader) {
       movementsLoader.remove();
-      const movementsPanel = Array.from(document.querySelectorAll('.panel')).find(p => 
+      const movementsPanel = Array.from(document.querySelectorAll('.panel')).find(p =>
         p.querySelector('.panel-title')?.textContent.includes('Movimientos Recientes')
       );
       if (movementsPanel) {
@@ -629,3 +612,15 @@ function formatCurrency(amount) {
 function formatNumber(number) {
   return number.toLocaleString('es-PE');
 }
+
+function updateCurrentDate() {
+  const dateElement = document.getElementById('dashboard-date');
+  if (dateElement) {
+    const now = new Date();
+    const options = { weekday: 'long', month: 'long', day: 'numeric' };
+    const dateString = now.toLocaleDateString('es-ES', options);
+    // Capitalize first letter: "viernes, 12 de diciembre" -> "Viernes, 12 de diciembre"
+    dateElement.textContent = dateString.charAt(0).toUpperCase() + dateString.slice(1);
+  }
+}
+

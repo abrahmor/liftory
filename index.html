@@ -15,6 +15,7 @@
         href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css" />
+    <link rel="stylesheet" href="/css/toast.css">
     <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
@@ -217,7 +218,7 @@
         <div class="modal-header">
             <h2>Inicia sesión</h2>
         </div>
-        <form class="auth-form" action="javascript:void(0)">
+        <form class="auth-form" action="javascript:void(0)" novalidate>
             <div class="input-group">
                 <input type="email" id="login-email" placeholder="Escribe tu correo" autocomplete="email" required>
                 <label for="login-email">Correo</label>
@@ -226,11 +227,11 @@
                 <input type="password" id="login-password" placeholder="Escribe tu contraseña"
                     autocomplete="current-password" required>
                 <label for="login-password">Contraseña</label>
-                <i class="ti ti-eye-off eye-icon" id="toggle-password"></i>
+                <i class="ti ti-eye eye-icon" id="toggle-password"></i>
             </div>
             <div class="form-options">
                 <label class="checkbox-label">
-                    <input type="checkbox" class="checkbox-custom"> Recordarme
+                    <input type="checkbox" class="ui-checkbox"> Recordarme
                 </label>
                 <a href="#" class="form-link">¿Olvidaste tu contraseña?</a>
             </div>
@@ -251,26 +252,26 @@
         <div class="modal-header">
             <h2>Crea tu cuenta</h2>
         </div>
-        <form id="register-form" class="auth-form">
+        <form id="register-form" class="auth-form" novalidate>
             <div class="input-group">
                 <input type="email" id="signup-email" placeholder="Escribe tu correo" required>
                 <label for="signup-email">Correo</label>
             </div>
-            <div class="input-group">
-                <input type="password" id="signup-password" placeholder="Escribe tu contraseña" required>
-                <label for="signup-password">Contraseña</label>
-                <i class="ti ti-eye-off eye-icon" id="toggle-password"></i>
-            </div>
-            <div class="input-group">
-                <input type="password" id="signup-password-confirm" placeholder="Repite tu contraseña" required>
-                <label for="signup-password-confirm">Repite tu contraseña</label>
-                <i class="ti ti-eye-off eye-icon" id="toggle-password"></i>
+            <div class="password-group" style="display: flex; flex-direction: column;">
+                <div class="input-group">
+                    <input type="password" id="signup-password" placeholder="Crea tu contraseña" required>
+                    <label for="signup-password">Contraseña</label>
+                    <i class="ti ti-eye eye-icon" id="toggle-password"></i>
+                </div>
+                <div class="input-group">
+                    <input type="password" id="signup-password-confirm" placeholder="Repite tu contraseña" required>
+                    <i class="ti ti-eye eye-icon" id="toggle-password"></i>
+                </div>
             </div>
             <label class="terms">
-                <input type="checkbox" id="accept" required>
+                <input type="checkbox" class="ui-checkbox" required>
                 <span>
-                    He leído y acepto la&nbsp;<a href="#" target="_blank" rel="noopener">Política de Privacidad</a>
-                    &nbsp;y los&nbsp;<a href="#" target="_blank" rel="noopener">Términos y Condiciones</a>
+                    Acepto los&nbsp;<a href="/terms.html" rel="noopener">Términos y Condiciones</a>
                 </span>
             </label>
             <button type="submit" class="auth-btn">Crear cuenta</button>

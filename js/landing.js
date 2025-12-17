@@ -3,13 +3,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // This file is included globally in the shell, so guard against running on app.html.
     const isLanding = document.querySelector('.nav-links') || document.getElementById('login-modal') || document.querySelector('.hero-btn') || document.querySelector('.log-in-btn');
     if (!isLanding) return;
-    
+
     // --- SCROLL ANIMATIONS ---
     const observerOptions = {
         threshold: 0.15,
         rootMargin: '0px 0px -100px 0px'
     };
-    
+
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
@@ -20,13 +20,13 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }, observerOptions);
-    
+
     // Observar secciones para animaciones al hacer scroll
     const sections = document.querySelectorAll('.section-header, .features, .plans, .footer');
     sections.forEach(section => {
         observer.observe(section);
     });
-    
+
     // --- HEADER SCROLL ---
     const header = document.querySelector('.header');
     if (header) {
@@ -136,12 +136,12 @@ document.querySelectorAll('.eye-icon').forEach(eyeIcon => {
     eyeIcon.addEventListener('click', () => {
         if (passwordInput.type === 'password') {
             passwordInput.type = 'text';
-            eyeIcon.classList.remove('ti-eye-off');
-            eyeIcon.classList.add('ti-eye');
-        } else {
-            passwordInput.type = 'password';
             eyeIcon.classList.remove('ti-eye');
             eyeIcon.classList.add('ti-eye-off');
+        } else {
+            passwordInput.type = 'password';
+            eyeIcon.classList.remove('ti-eye-off');
+            eyeIcon.classList.add('ti-eye');
         }
     });
 });

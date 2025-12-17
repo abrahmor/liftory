@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
       window.location.href = '/index.html';
       return;
     }
-    
+
     // Está autenticado, actualizar UI
     await updateUserUI(user);
     setupLogoutButton();
@@ -24,7 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
 async function updateUserUI(user) {
   // Mostrar nombre inmediatamente desde Firebase Auth (más rápido)
   const quickName = user.displayName || user.email?.split('@')[0] || 'Usuario';
-  
+
   // Actualizar nombre de usuario inmediatamente
   const userNameElements = document.querySelectorAll('.user-profile-name');
   userNameElements.forEach(el => {
@@ -45,9 +45,11 @@ async function updateUserUI(user) {
   }
 
   // Actualizar avatar si existe
-  const avatarImg = document.querySelector('.user-avatar-img');
-  if (avatarImg && user.photoURL) {
-    avatarImg.src = user.photoURL;
+  const avatarImgs = document.querySelectorAll('.user-avatar-img');
+  if (user.photoURL) {
+    avatarImgs.forEach(img => {
+      if (img) img.src = user.photoURL;
+    });
   }
 
   // Actualizar dashboard inmediatamente
@@ -57,17 +59,17 @@ async function updateUserUI(user) {
   getUserData(user.uid).then(userData => {
     if (userData?.displayName && userData.displayName !== quickName) {
       const finalName = userData.displayName;
-      
+
       // Actualizar con el nombre de Firestore si es diferente
       userNameElements.forEach(el => {
         if (el) el.textContent = finalName;
       });
-      
+
       if (nameValueElement) {
         nameValueElement.textContent = finalName;
         nameValueElement.dataset.originalName = finalName;
       }
-      
+
       updateDashboardName(finalName);
     }
   }).catch(err => {
@@ -78,7 +80,7 @@ async function updateUserUI(user) {
 function updateDashboardName(name) {
   const dashboardTitle = document.querySelector('.dasboard-title');
   if (dashboardTitle) {
-    dashboardTitle.textContent = `Bienvenido, ${name}`;
+    dashboardTitle.textContent = `Hola, ${name}`;
   }
 }
 
@@ -88,7 +90,7 @@ function setupLogoutButton() {
     // Remover listeners anteriores
     const newLogoutBtn = logoutBtn.cloneNode(true);
     logoutBtn.parentNode.replaceChild(newLogoutBtn, logoutBtn);
-    
+
     newLogoutBtn.addEventListener('click', async () => {
       const result = await signOut();
       if (result.success) {
@@ -99,112 +101,144 @@ function setupLogoutButton() {
 }
 
 function setupEditNameButton() {
-  const editBtn = document.querySelector('.profile-edit-btn');
-  const nameValueElement = document.querySelector('.profile-detail-card:nth-of-type(2) .profile-detail-value');
-  
-  if (!editBtn || !nameValueElement) return;
+  const editBtn = document.querySelector('.user-profile-name-section .profile-edit-btn');
+  const nameElement = document.querySelector('.user-profile-name-section .user-profile-name');
 
-  // Remover listeners anteriores
-  const newEditBtn = editBtn.cloneNode(true);
-  editBtn.parentNode.replaceChild(newEditBtn, editBtn);
+  if (!editBtn || !nameElement) return;
 
-  newEditBtn.addEventListener('click', () => {
-    const currentName = nameValueElement.textContent;
-    const originalName = nameValueElement.dataset.originalName || currentName;
+  // Use onclick property to avoid duplicate listeners without needing to clone/replace the node
+  editBtn.onclick = () => {
+    // 1. Get current state
+    const currentName = nameElement.textContent;
+    const originalName = nameElement.dataset.originalName || currentName;
 
-    // Crear input para editar
+    // 2. Hide static elements (Edit button and Name text)
+    editBtn.style.display = 'none';
+    nameElement.style.display = 'none';
+
+    // 3. Create interactive elements container
+    const editContainer = document.createElement('div');
+    editContainer.className = 'edit-ui-container';
+    editContainer.style.cssText = 'display: flex; align-items: center; gap: 8px;';
+
+    // Input
     const input = document.createElement('input');
     input.type = 'text';
     input.value = currentName;
-    input.className = 'input';
-    input.style.cssText = 'margin-top: 8px; width: 100%;';
-    
-    // Reemplazar el texto con el input
-    nameValueElement.textContent = '';
-    nameValueElement.appendChild(input);
+    input.className = 'input-edit-profile-name';
+    input.style.cssText = `
+        background: #1010128c; 
+        border: 1px solid rgba(255, 255, 255, 0.2); 
+        color: #fff; 
+        border-radius: 6px; 
+        padding: 4px 8px; 
+        font-size: 1.1rem; 
+        font-weight: 500;
+        width: 200px;
+        outline: none;
+        text-align: center;
+    `;
+
+    // Save Button
+    const saveBtn = document.createElement('button');
+    saveBtn.innerHTML = `<i class="ti ti-check"></i>`;
+    saveBtn.className = 'profile-edit-btn icon-btn-success';
+    saveBtn.title = 'Guardar';
+
+    // Cancel Button
+    const cancelBtn = document.createElement('button');
+    cancelBtn.innerHTML = `<i class="ti ti-x"></i>`;
+    cancelBtn.className = 'profile-edit-btn icon-btn-danger';
+    cancelBtn.title = 'Cancelar';
+
+    // Assemble container
+    editContainer.appendChild(input);
+    editContainer.appendChild(saveBtn);
+    editContainer.appendChild(cancelBtn);
+
+    // Insert into DOM (replacing name/button visually)
+    // We insert it before the nameElement to keep position
+    nameElement.parentNode.insertBefore(editContainer, nameElement);
+
     input.focus();
     input.select();
 
-    // Cambiar botón a "Guardar" y "Cancelar"
-    newEditBtn.textContent = 'Guardar';
-    newEditBtn.style.marginRight = '8px';
+    // 4. Define Cleanup/Finish Logic
+    const cleanup = () => {
+      if (editContainer.parentNode) editContainer.remove();
+      nameElement.style.display = ''; // Show Text
+      editBtn.style.display = '';     // Show Edit Button
+    };
 
-    const cancelBtn = document.createElement('button');
-    cancelBtn.textContent = 'Cancelar';
-    cancelBtn.className = 'profile-edit-btn';
-    cancelBtn.style.cssText = newEditBtn.style.cssText;
-    newEditBtn.parentNode.appendChild(cancelBtn);
+    // 5. Handlers
+    const handleCancel = () => {
+      cleanup();
+    };
 
-    // Guardar
-    const saveHandler = async () => {
+    const handleSave = async () => {
       const newName = input.value.trim();
-      
+
       if (!newName) {
         showError('El nombre no puede estar vacío');
         return;
       }
 
       if (newName === originalName) {
-        // No hay cambios, cancelar
-        cancelHandler();
+        handleCancel();
         return;
       }
 
-      newEditBtn.disabled = true;
-      newEditBtn.textContent = 'Guardando...';
+      // Loading State
+      saveBtn.innerHTML = `<div class="spinner-border"></div>`;
+      saveBtn.disabled = true;
+      cancelBtn.disabled = true;
+      input.disabled = true;
 
       const result = await updateUserDisplayName(newName);
-      
-      newEditBtn.disabled = false;
 
       if (result.success) {
-        // Actualizar UI
-        nameValueElement.textContent = newName;
-        nameValueElement.dataset.originalName = newName;
-        nameValueElement.removeChild(input);
-        newEditBtn.textContent = 'Editar';
-        newEditBtn.removeEventListener('click', saveHandler);
-        setupEditNameButton(); // Re-configurar el botón
-        cancelBtn.remove();
-        updateDashboardName(newName);
-        
-        // Actualizar nombre en avatar section
+        // Update UI across the app
         document.querySelectorAll('.user-profile-name').forEach(el => {
           el.textContent = newName;
+          el.dataset.originalName = newName;
         });
+
+        updateDashboardName(newName);
+
+        // Sync the detail card value as well
+        const detailCardValue = document.querySelector('.profile-detail-card:nth-of-type(2) .profile-detail-value');
+        if (detailCardValue) {
+          detailCardValue.textContent = newName;
+        }
+
+        // Wait a tiny bit for the user to see the process finished? No, instant feedback is better.
+        cleanup();
+        showToast('Nombre actualizado correctamente', 'success');
       } else {
-        showError(result.error || 'Error al actualizar el nombre');
+        // Reset to Save State on error
+        saveBtn.innerHTML = `<i class="ti ti-check"></i>`;
+        saveBtn.disabled = false;
+        cancelBtn.disabled = false;
+        input.disabled = false;
+        showError(result.error || 'Error al actualizar');
       }
     };
 
-    // Cancelar
-    const cancelHandler = () => {
-      nameValueElement.textContent = originalName;
-      nameValueElement.dataset.originalName = originalName;
-      newEditBtn.textContent = 'Editar';
-      newEditBtn.removeEventListener('click', saveHandler);
-      setupEditNameButton(); // Re-configurar el botón
-      cancelBtn.remove();
-    };
+    // Attach listeners
+    saveBtn.onclick = handleSave;
+    cancelBtn.onclick = handleCancel;
 
-    newEditBtn.addEventListener('click', saveHandler);
-    cancelBtn.addEventListener('click', cancelHandler);
-
-    // Guardar con Enter, cancelar con Escape
     input.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') {
-        saveHandler();
-      } else if (e.key === 'Escape') {
-        cancelHandler();
-      }
+      if (e.key === 'Enter') handleSave();
+      if (e.key === 'Escape') handleCancel();
     });
-  });
+  };
 }
 
 function showError(message) {
   // Crear o actualizar elemento de error
   let errorElement = document.querySelector('.profile-error-message');
-  
+
   if (!errorElement) {
     errorElement = document.createElement('div');
     errorElement.className = 'profile-error-message';
@@ -218,14 +252,14 @@ function showError(message) {
       font-size: 0.85rem;
     `;
   }
-  
+
   errorElement.textContent = message;
-  
+
   const nameCard = document.querySelector('.profile-detail-card:nth-of-type(2)');
   if (nameCard && !nameCard.querySelector('.profile-error-message')) {
     nameCard.appendChild(errorElement);
   }
-  
+
   setTimeout(() => {
     if (errorElement && errorElement.parentNode) {
       errorElement.remove();
