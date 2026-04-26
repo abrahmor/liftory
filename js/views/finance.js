@@ -68,6 +68,7 @@ function setupExpenseModal() {
 
   // Open modal with view transition
   openBtn.addEventListener('click', (event) => {
+    document.querySelectorAll('[origin-element]').forEach(el => el.removeAttribute('origin-element'));
     event.currentTarget.setAttribute('origin-element', '');
     if (window.toggleDialog) {
       window.toggleDialog('expense-modal');
@@ -134,7 +135,11 @@ function setupExpenseModal() {
       if (dateInput) dateInput.value = todayStr;
 
       // Close modal
-      closeModalWithTransition(modal);
+      if (window.toggleDialog) {
+        window.toggleDialog();
+      } else {
+        modal.close();
+      }
 
     } catch (error) {
       console.error('Error saving expense:', error);
@@ -144,34 +149,7 @@ function setupExpenseModal() {
   });
 }
 
-function closeModalWithTransition(modal) {
-  const originElement = document.querySelector('[origin-element]');
-  if (originElement && document.startViewTransition) {
-    const viewTransitionClassClosing = "vt-element-animation-closing";
 
-    modal.style.viewTransitionName = "vt-shared";
-    modal.style.viewTransitionClass = viewTransitionClassClosing;
-
-    originElement.style.viewTransitionName = "vt-shared";
-    originElement.style.viewTransitionClass = viewTransitionClassClosing;
-
-    const viewTransition = document.startViewTransition(() => {
-      modal.close();
-      originElement.style.viewTransitionName = "";
-      originElement.style.viewTransitionClass = "";
-      modal.style.viewTransitionName = "";
-      modal.style.viewTransitionClass = "";
-      document.body.style.overflow = "";
-    });
-
-    viewTransition.finished.then(() => {
-      originElement.removeAttribute('origin-element');
-    });
-  } else {
-    modal.close();
-    document.body.style.overflow = "";
-  }
-}
 
 function setupFilters() {
   const chartPeriodFilter = document.getElementById('chart-period-filter');

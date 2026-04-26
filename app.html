@@ -495,6 +495,7 @@
                         originElement.removeAttribute("origin-element");
                     } else {
                         openDialog.close();
+                        if (originElement) originElement.removeAttribute("origin-element");
                     }
                     document.body.style.overflow = "";
                 }
@@ -507,8 +508,8 @@
                 return;
             }
 
-            // Get origin element from window.event or from attribute
-            const originElement = (window.event && window.event.currentTarget) || document.querySelector("[origin-element]");
+            // Get origin element from explicitly set attribute, then fallback to window.event
+            const originElement = document.querySelector("[origin-element]") || (window.event && window.event.currentTarget);
 
             if (originElement && document.startViewTransition) {
                 dialog.style.viewTransitionName = "vt-shared";

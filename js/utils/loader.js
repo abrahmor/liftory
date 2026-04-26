@@ -98,11 +98,11 @@ export function setButtonLoading(button, isLoading) {
     
     // Crear loader pequeño dentro del botón
     const loaderSvg = `
-      <svg viewBox="25 25 50 50" class="btn-loader-svg" style="width: 1.2em; height: 1.2em; margin-right: 8px; vertical-align: middle;">
+      <svg viewBox="25 25 50 50" class="btn-loader-svg" style="width: 1.2em; height: 1.2em; margin: 0 auto; display: block;">
         <circle cx="50" cy="50" r="20" class="btn-loader-circle"></circle>
       </svg>
     `;
-    button.innerHTML = loaderSvg + '<span>Cargando</span>';
+    button.innerHTML = loaderSvg;
   } else {
     button.classList.remove('btn-loading');
     button.disabled = false;
