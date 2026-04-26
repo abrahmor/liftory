@@ -74,20 +74,31 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-async function toggleDialog(dialogId) {
+async function toggleDialog(e, dialogId) {
     const viewTransitionClass = "vt-element-animation";
     const viewTransitionClassClosing = "vt-element-animation-closing";
 
     if (!dialogId) {
         const openDialog = document.querySelector("dialog[open]");
         const originElement = document.querySelector("[origin-element]");
+        
+        if (!openDialog) return;
+
+        if (!document.startViewTransition) {
+            openDialog.close();
+            if (originElement) originElement.removeAttribute("origin-element");
+            document.body.style.overflow = "";
+            return false;
+        }
 
         openDialog.style.viewTransitionName = "vt-shared";
         openDialog.style.viewTransitionClass = viewTransitionClassClosing;
 
         const viewTransition = document.startViewTransition(() => {
-            originElement.style.viewTransitionName = "vt-shared";
-            originElement.style.viewTransitionClass = viewTransitionClassClosing;
+            if (originElement) {
+                originElement.style.viewTransitionName = "vt-shared";
+                originElement.style.viewTransitionClass = viewTransitionClassClosing;
+            }
 
             openDialog.style.viewTransitionName = "";
             openDialog.style.viewTransitionClass = "";
@@ -95,9 +106,11 @@ async function toggleDialog(dialogId) {
             openDialog.close();
         });
         await viewTransition.finished;
-        originElement.style.viewTransitionName = "";
-        originElement.style.viewTransitionClass = "";
-        originElement.removeAttribute("origin-element");
+        if (originElement) {
+            originElement.style.viewTransitionName = "";
+            originElement.style.viewTransitionClass = "";
+            originElement.removeAttribute("origin-element");
+        }
 
         // enable page scroll again
         document.body.style.overflow = "";
@@ -106,18 +119,28 @@ async function toggleDialog(dialogId) {
     }
 
     const dialog = document.getElementById(dialogId);
-    const originElement = event.currentTarget;
+    const originElement = e ? e.currentTarget : null;
+
+    if (!document.startViewTransition) {
+        dialog.showModal();
+        document.body.style.overflow = "hidden";
+        return;
+    }
 
     dialog.style.viewTransitionName = "vt-shared";
     dialog.style.viewTransitionClass = viewTransitionClass;
 
-    originElement.style.viewTransitionName = "vt-shared";
-    originElement.style.viewTransitionClass = viewTransitionClass;
-    originElement.setAttribute("origin-element", "");
+    if (originElement) {
+        originElement.style.viewTransitionName = "vt-shared";
+        originElement.style.viewTransitionClass = viewTransitionClass;
+        originElement.setAttribute("origin-element", "");
+    }
 
     const viewTransition = document.startViewTransition(() => {
-        originElement.style.viewTransitionName = "";
-        originElement.style.viewTransitionClass = "";
+        if (originElement) {
+            originElement.style.viewTransitionName = "";
+            originElement.style.viewTransitionClass = "";
+        }
         dialog.showModal();
     });
     await viewTransition.finished;
@@ -154,12 +177,23 @@ const signupDialog = document.getElementById('signup-dialog');
 // document.getElementById('openLogin')?.addEventListener('click', () => loginDialog.showModal());
 // document.getElementById('openSignup')?.addEventListener('click', () => signupDialog.showModal());
 
-// Cerrar con botón [data-close-dialog]
+// Global event listener for opening and closing dialogs to avoid CSP inline handler issues
 document.addEventListener('click', (e) => {
+    // Open dialog
+    const openBtn = e.target.closest('[data-open-dialog]');
+    if (openBtn) {
+        const dialogId = openBtn.getAttribute('data-open-dialog');
+        // Usar un fake event o bindeamos el originElement
+        const fakeEvent = { currentTarget: openBtn };
+        toggleDialog(fakeEvent, dialogId);
+        return;
+    }
+
+    // Close dialog
     const closeBtn = e.target.closest('[data-close-dialog]');
-    if (!closeBtn) return;
-    const dlg = closeBtn.closest('dialog');
-    dlg?.close();
+    if (closeBtn) {
+        toggleDialog(null, null);
+    }
 });
 
 // Cambiar entre login <-> signup sin inline handlers

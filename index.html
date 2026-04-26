@@ -41,7 +41,7 @@
                 <a href="#planes">Planes</a>
                 <a href="">Contacto</a>
             </div>
-            <button class="login-btn" onclick="toggleDialog('login-dialog')">
+            <button class="login-btn" data-open-dialog="login-dialog">
                 Iniciar sesión
             </button>
         </nav>
@@ -56,7 +56,7 @@
             <p>
                 Controla tus productos, ventas y gastos de manera simple y rápida accesible desde cualquier dispositivo
             </p>
-            <button class="hero-btn" onclick="toggleDialog('signup-dialog')">
+            <button class="hero-btn" data-open-dialog="signup-dialog">
                 Comienza gratis
             </button>
         </section>
@@ -137,7 +137,7 @@
                     <li>Sin conexión</li>
                     <li>1 usuario</li>
                 </ul>
-                <button class="plan-btn" onclick="toggleDialog('signup-dialog')">Empezar gratis</button>
+                <button class="plan-btn" data-open-dialog="signup-dialog">Empezar gratis</button>
             </div>
             <div class="plan-card coming-soon">
                 <div class="plan-header">
@@ -214,7 +214,13 @@
     </footer>
 
     <dialog id="login-dialog" class="login-dialog">
-        <button class="close-modal" aria-label="Cerrar" onclick="toggleDialog()">×</button>
+        <button class="close-modal" aria-label="Cerrar" data-close-dialog>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18 6L6 18" />
+                <path d="M6 6l12 12" />
+            </svg>
+        </button>
         <div class="modal-header">
             <h2>Inicia sesión</h2>
         </div>
@@ -248,7 +254,13 @@
     </dialog>
 
     <dialog id="signup-dialog" class="signup-dialog">
-        <button class="close-modal" aria-label="Cerrar" onclick="toggleDialog()">×</button>
+        <button class="close-modal" aria-label="Cerrar" data-close-dialog>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18 6L6 18" />
+                <path d="M6 6l12 12" />
+            </svg>
+        </button>
         <div class="modal-header">
             <h2>Crea tu cuenta</h2>
         </div>
